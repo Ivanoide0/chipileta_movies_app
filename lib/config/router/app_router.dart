@@ -1,6 +1,6 @@
 // importamos go router, sirve para manejar la navegacion de la app
 import 'package:go_router/go_router.dart';
-import 'package:chipileta_movies_app/config/router/presentation/screens/movies/home_screen.dart';
+import 'package:chipileta_movies_app/config/router/presentation/screens/screen.dart';
 
 //Usar GoRouter nos ayuda a que nosostros no tengamos que hacer configuraciones especiales si lo queremos usar en la web.
 //Creamos la configuracion global del router
