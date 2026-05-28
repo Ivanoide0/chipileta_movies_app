@@ -6,6 +6,8 @@ class User {
   final String telephone;
   final bool acceptTerms;
   final int rolId;
+  final bool isActive;
+  final DateTime createdAt;
 
   const User({
     this.id,
@@ -15,5 +17,7 @@ class User {
     required this.telephone,
     required this.acceptTerms,
     required this.rolId,
+    required this.isActive,
+    required this.createdAt
   });
 }
