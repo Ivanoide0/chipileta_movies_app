@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter_svg/flutter_svg.dart';
-
+//import 'package:chipileta_movies_app/config/router/presentation/screens/assets/svg/chipilogo.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/resources/styles/styles.dart';
+import 'package:chipileta_movies_app/config/router/presentation/widgets/button_widget.dart';
+import 'package:chipileta_movies_app/config/router/presentation/screens/auth/register.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -20,7 +21,7 @@ class LoginPage extends StatelessWidget {
         elevation: 0,
       ),
       body: Container(
-        width: double.infinity,
+        width: double.infinity, 
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: AppColors.loginGradient,
@@ -33,7 +34,7 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 60),
 
                 // SvgPicture.asset(
-                //   'assets/svg/chipi_logo.svg',
+                //   'assets/svg/chipilogo.svg',
                 //   width: 230,
                 // ),
 
@@ -59,9 +60,11 @@ class LoginPage extends StatelessWidget {
 
                 const SizedBox(height: 36),
 
-                const Text(
-                  'AQUI VA BOTON',
-                  style: AppStyles.buttonPlaceholder,
+                AppButton(
+                  text: 'INICIAR SESIÓN',
+                  onPressed: () {
+                    
+                  },
                 ),
 
                 const SizedBox(height: 18),
@@ -73,16 +76,31 @@ class LoginPage extends StatelessWidget {
 
                 const SizedBox(height: 35),
 
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       'No tengo cuenta, ',
                       style: AppStyles.normalText,
                     ),
-                    Text(
-                      'Registrarse.',
-                      style: AppStyles.linkText,
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterPage(),
+                          ),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Registrarse.',
+                        style: AppStyles.linkText,
+                      ),
                     ),
                   ],
                 ),

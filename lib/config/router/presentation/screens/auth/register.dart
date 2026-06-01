@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/resources/styles/styles.dart';
+import 'package:chipileta_movies_app/config/router/presentation/screens/auth/login.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -150,16 +151,31 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 const SizedBox(height: 35),
 
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       'Ya tengo cuenta, ',
                       style: AppStyles.normalText,
                     ),
-                    Text(
-                      'Iniciar Sesión.',
-                      style: AppStyles.linkText,
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPage(),
+                          ),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Iniciar Sesión.',
+                        style: AppStyles.linkText,
+                      ),
                     ),
                   ],
                 ),
