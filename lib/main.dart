@@ -17,7 +17,7 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Material App',
       theme: AppTheme().getTheme(), 
-      home: const LoginPage(), // Página de inicio (placeholder)
+      home: const RegisterPage(), // Página de inicio (placeholder)
     );
   }
 }
