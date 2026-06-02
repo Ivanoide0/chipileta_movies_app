@@ -26,4 +26,16 @@ class AuthRepositoryImpl implements AuthRepository {
     );
     return userModel.toEntity();
   }
+
+  @override
+  Future<User> login({
+    required String email,
+    required String password
+  }) async {
+    final userModel = await localDataSource.login(
+      email: email,
+      password: password
+    );
+    return userModel.toEntity();
+  }
 }

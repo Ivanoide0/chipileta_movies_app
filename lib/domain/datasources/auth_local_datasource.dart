@@ -66,4 +66,35 @@ class AuthLocalDataSource {
       createdAt: now,
     );
   }
+
+  Future<UserModel> login({
+    required String email,
+    required String password,
+  }) async {
+    final db = await dbHelper.database;
+
+    final result = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email.trim().toLowerCase()],
+      limit: 1,
+    );
+
+    if(result.isEmpty){
+      throw Exception('Usuario no encontrado.');
+    }
+
+    final user = UserModel.fromMap(result.first);
+
+    if(!user.isActive){
+      throw Exception('Usuario inactivo. Contacta al soporte.');
+    }
+
+    final passwordOk = BCrypt.checkpw(password, user.passwordHash);
+    if(!passwordOk){
+      throw Exception('Contraseña incorrecta.');
+    }
+
+    return user;
+  }
 }
