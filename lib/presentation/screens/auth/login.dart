@@ -100,13 +100,20 @@ class _LoginPageState extends State<LoginPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  const SizedBox(height: 60),
-                  const SizedBox(height: 70),
+                  const SizedBox(height: 30),
 
-                  const Text(
-                    'INICIAR SESIÓN',
-                    style: AppStyles.loginTitle,
-                  ),
+                  Image.asset(
+                    'lib/resources/images/chipilogo 2.png',
+                    height: 100,
+                    fit: BoxFit.contain,
+                      ),
+
+  const SizedBox(height: 20),
+
+  const Text(
+    'INICIAR SESIÓN',
+    style: AppStyles.loginTitle,
+  ),
 
                   const SizedBox(height: 18),
 
