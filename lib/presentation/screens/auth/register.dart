@@ -7,6 +7,7 @@ import 'package:chipileta_movies_app/domain/datasources/auth_local_datasource.da
 import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/register_usecase.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/home_screen.dart';
+import 'package:chipileta_movies_app/presentation/widgets/input_field.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -101,11 +102,12 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(gradient: AppColors.loginGradient),
+        decoration: const BoxDecoration(
+          gradient: AppColors.loginGradient,
+        ),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 38),
@@ -114,23 +116,16 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 50),
+                  const SizedBox(height: 70),
 
-                  Image.asset(
-                  'lib/resources/images/chipilogo 2.png',
-                    height: 100,
-                     fit: BoxFit.contain,
-                      ),
-
-const SizedBox(height: 20),
-
-const Text(
-  'REGÍSTRATE',
-  style: AppStyles.loginTitle,
-),
+                  const Text(
+                    'REGÍSTRATE',
+                    style: AppStyles.loginTitle,
+                  ),
 
                   const SizedBox(height: 18),
 
-                  _inputField(
+                  AppInputField(
                     controller: _nameController,
                     hintText: 'Nombre',
                     validator: validateName,
@@ -139,7 +134,7 @@ const Text(
 
                   const SizedBox(height: 18),
 
-                  _inputField(
+                  AppInputField(
                     controller: _lastNameController,
                     hintText: 'Apellidos',
                     validator: validateLastName,
@@ -148,36 +143,34 @@ const Text(
 
                   const SizedBox(height: 18),
 
-                  _inputField(
+                  AppInputField(
                     controller: _passwordController,
                     hintText: 'Contraseña',
                     isPassword: true,
                     obscureText: !_showPassword,
-                    onToggleObscure: () => setState(
-                      () => _showPassword = !_showPassword,
-                    ),
+                    onToggleObscure: () =>
+                        setState(() => _showPassword = !_showPassword),
                     validator: validatePassword,
                     enabled: !_isLoading,
                   ),
 
                   const SizedBox(height: 18),
 
-                  _inputField(
+                  AppInputField(
                     controller: _confirmPasswordController,
                     hintText: 'Confirmar contraseña',
                     isPassword: true,
                     obscureText: !_showConfirmPassword,
                     onToggleObscure: () => setState(
-                      () => _showConfirmPassword = !_showConfirmPassword,
-                    ),
-                    validator: (v) =>
-                        validateConfirmPassword(v, _passwordController.text),
+                        () => _showConfirmPassword = !_showConfirmPassword),
+                    validator: (v) => validateConfirmPassword(
+                        v, _passwordController.text),
                     enabled: !_isLoading,
                   ),
 
                   const SizedBox(height: 18),
 
-                  _inputField(
+                  AppInputField(
                     controller: _emailController,
                     hintText: 'Correo Electrónico',
                     keyboardType: TextInputType.emailAddress,
@@ -187,7 +180,7 @@ const Text(
 
                   const SizedBox(height: 18),
 
-                  _inputField(
+                  AppInputField(
                     controller: _phoneController,
                     hintText: 'Número de teléfono',
                     keyboardType: TextInputType.phone,
@@ -210,8 +203,7 @@ const Text(
                         onChanged: _isLoading
                             ? null
                             : (value) => setState(
-                                  () => _acceptTerms = value ?? false,
-                                ),
+                                () => _acceptTerms = value ?? false),
                       ),
                       Expanded(
                         child: RichText(
@@ -285,10 +277,16 @@ const Text(
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Ya tengo cuenta, ', style: AppStyles.normalText),
+                      const Text(
+                        'Ya tengo cuenta, ',
+                        style: AppStyles.normalText,
+                      ),
                       GestureDetector(
                         onTap: _goToLogin,
-                        child: const Text('Iniciar Sesión.', style: AppStyles.linkText),
+                        child: const Text(
+                          'Iniciar Sesión.',
+                          style: AppStyles.linkText,
+                        ),
                       ),
                     ],
                   ),
@@ -299,48 +297,6 @@ const Text(
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _inputField({
-    required TextEditingController controller,
-    required String hintText,
-    required String? Function(String?) validator,
-    bool isPassword = false,
-    bool obscureText = false,
-    VoidCallback? onToggleObscure,
-    TextInputType keyboardType = TextInputType.text,
-    bool enabled = true,
-  }) {
-    return TextFormField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: keyboardType,
-      obscureText: isPassword ? obscureText : false,
-      style: AppStyles.inputText,
-      validator: validator,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppStyles.inputHint,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: AppColors.white, width: 2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: AppColors.yellow, width: 2),
-        ),
-        suffixIcon: isPassword
-            ? IconButton(
-                onPressed: enabled ? onToggleObscure : null,
-                icon: Icon(
-                  obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: AppColors.yellow,
-                ),
-              )
-            : null,
       ),
     );
   }

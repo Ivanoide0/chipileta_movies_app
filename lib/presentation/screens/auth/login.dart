@@ -9,6 +9,7 @@ import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.da
 import 'package:chipileta_movies_app/domain/usercases/login_usecase.dart';
 import 'package:chipileta_movies_app/presentation/screens/auth/register.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/home_screen.dart';
+import 'package:chipileta_movies_app/presentation/widgets/input_field.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -99,15 +100,8 @@ class _LoginPageState extends State<LoginPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  const SizedBox(height: 30),
-
-                  Image.asset(
-                    'lib/resources/images/chipilogo 2.png',
-                    height: 100,
-                    fit: BoxFit.contain,
-                  ),
-
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 60),
+                  const SizedBox(height: 70),
 
                   const Text(
                     'INICIAR SESIÓN',
@@ -116,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 18),
 
-                  _inputField(
+                  AppInputField(
                     controller: _emailController,
                     hintText: 'Correo electrónico',
                     keyboardType: TextInputType.emailAddress,
@@ -126,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 26),
 
-                  _inputField(
+                  AppInputField(
                     controller: _passwordController,
                     hintText: 'Contraseña',
                     isPassword: true,
@@ -218,59 +212,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _inputField({
-    required TextEditingController controller,
-    required String hintText,
-    required String? Function(String?) validator,
-    bool isPassword = false,
-    bool obscureText = false,
-    VoidCallback? onToggleObscure,
-    TextInputType keyboardType = TextInputType.text,
-    bool enabled = true,
-  }) {
-    return TextFormField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: keyboardType,
-      obscureText: isPassword ? obscureText : false,
-      style: AppStyles.inputText,
-      validator: validator,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppStyles.inputHint,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 14,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(
-            color: AppColors.white,
-            width: 2,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(
-            color: AppColors.yellow,
-            width: 2,
-          ),
-        ),
-        suffixIcon: isPassword
-            ? IconButton(
-                onPressed: enabled ? onToggleObscure : null,
-                icon: Icon(
-                  obscureText
-                      ? Icons.visibility_off
-                      : Icons.visibility,
-                  color: AppColors.yellow,
-                ),
-              )
-            : null,
       ),
     );
   }
