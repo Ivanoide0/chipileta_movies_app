@@ -86,15 +86,12 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      appBar: AppBar(
-        title: const Text('Login', style: AppStyles.appBarTitle),
-        backgroundColor: AppColors.backgroundDark,
-        elevation: 0,
-      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(gradient: AppColors.loginGradient),
+        decoration: const BoxDecoration(
+          gradient: AppColors.loginGradient,
+        ),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 38),
@@ -102,10 +99,20 @@ class _LoginPageState extends State<LoginPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  const SizedBox(height: 60),
-                  const SizedBox(height: 70),
+                  const SizedBox(height: 30),
 
-                  const Text('INICIAR SESIÓN', style: AppStyles.loginTitle),
+                  Image.asset(
+                    'lib/resources/images/chipilogo 2.png',
+                    height: 100,
+                    fit: BoxFit.contain,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    'INICIAR SESIÓN',
+                    style: AppStyles.loginTitle,
+                  ),
 
                   const SizedBox(height: 18),
 
@@ -191,10 +198,16 @@ class _LoginPageState extends State<LoginPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('No tengo cuenta, ', style: AppStyles.normalText),
+                      const Text(
+                        'No tengo cuenta, ',
+                        style: AppStyles.normalText,
+                      ),
                       GestureDetector(
                         onTap: _goToRegister,
-                        child: const Text('Registrarse.', style: AppStyles.linkText),
+                        child: const Text(
+                          'Registrarse.',
+                          style: AppStyles.linkText,
+                        ),
                       ),
                     ],
                   ),
@@ -229,20 +242,31 @@ class _LoginPageState extends State<LoginPage> {
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: AppStyles.inputHint,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 14,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: AppColors.white, width: 2),
+          borderSide: const BorderSide(
+            color: AppColors.white,
+            width: 2,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: AppColors.yellow, width: 2),
+          borderSide: const BorderSide(
+            color: AppColors.yellow,
+            width: 2,
+          ),
         ),
         suffixIcon: isPassword
             ? IconButton(
                 onPressed: enabled ? onToggleObscure : null,
                 icon: Icon(
-                  obscureText ? Icons.visibility_off : Icons.visibility,
+                  obscureText
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                   color: AppColors.yellow,
                 ),
               )

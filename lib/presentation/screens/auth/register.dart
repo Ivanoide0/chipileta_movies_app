@@ -101,11 +101,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      appBar: AppBar(
-        title: const Text('Registro', style: AppStyles.appBarTitle),
-        backgroundColor: AppColors.backgroundDark,
-        elevation: 0,
-      ),
+
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -118,14 +114,19 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 50),
-                  const SizedBox(height: 70),
 
-                  // Image.asset(
-                  //   'assets/images/chipi_logo.png',
-                  //   width: 160,
-                  // ),
+                  Image.asset(
+                  'lib/resources/images/chipilogo 2.png',
+                    height: 100,
+                     fit: BoxFit.contain,
+                      ),
 
-                  const Text('REGÍSTRATE', style: AppStyles.loginTitle),
+const SizedBox(height: 20),
+
+const Text(
+  'REGÍSTRATE',
+  style: AppStyles.loginTitle,
+),
 
                   const SizedBox(height: 18),
 
