@@ -10,6 +10,7 @@ import 'package:chipileta_movies_app/domain/usercases/login_usecase.dart';
 import 'package:chipileta_movies_app/presentation/screens/auth/register.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/home_screen.dart';
 import 'package:chipileta_movies_app/presentation/widgets/input_field.dart';
+import 'package:chipileta_movies_app/presentation/widgets/button_widget.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -170,36 +171,10 @@ Widget build(BuildContext context) {
 
                       const SizedBox(height: 24),
 
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.turquoise,
-                            foregroundColor: AppColors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: AppColors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  'Iniciar sesión',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                        ),
-                      ),
+                      AppButton(
+                        text: 'Inciar sesión', 
+                        onPressed: _submit,
+                        isLoading: _isLoading),
 
                       const SizedBox(height: 18),
 
