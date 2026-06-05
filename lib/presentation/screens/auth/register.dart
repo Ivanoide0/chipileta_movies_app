@@ -8,7 +8,7 @@ import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.da
 import 'package:chipileta_movies_app/domain/usercases/register_usecase.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/home_screen.dart';
 import 'package:chipileta_movies_app/presentation/widgets/input_field.dart';
-
+import 'package:chipileta_movies_app/presentation/screens/auth/login.dart';
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -94,212 +94,245 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void _goToLogin() {
-    Navigator.of(context).pop();
-  }
-
+void _goToLogin() {
+  Navigator.of(context).pushReplacement(
+    PageRouteBuilder(
+      pageBuilder: (_, __, ___) => const LoginPage(),
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppColors.loginGradient,
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 38),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  const SizedBox(height: 30),
-
-                    Image.asset(
-                    'lib/resources/images/chipilogo 2.png',
-                    height: 100,
-                    fit: BoxFit.contain,
-                      ),
-
-  const SizedBox(height: 20),
-
-  const Text(
-    'REGÍSTRATE',
-    style: AppStyles.loginTitle,
-  ),
-
-                  const SizedBox(height: 18),
-
-                  AppInputField(
-                    controller: _nameController,
-                    hintText: 'Nombre',
-                    validator: validateName,
-                    enabled: !_isLoading,
+      body: SafeArea(
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: AppColors.loginGradient,
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 38),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 450,
                   ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 30),
 
-                  const SizedBox(height: 18),
-
-                  AppInputField(
-                    controller: _lastNameController,
-                    hintText: 'Apellidos',
-                    validator: validateLastName,
-                    enabled: !_isLoading,
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  AppInputField(
-                    controller: _passwordController,
-                    hintText: 'Contraseña',
-                    isPassword: true,
-                    obscureText: !_showPassword,
-                    onToggleObscure: () =>
-                        setState(() => _showPassword = !_showPassword),
-                    validator: validatePassword,
-                    enabled: !_isLoading,
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  AppInputField(
-                    controller: _confirmPasswordController,
-                    hintText: 'Confirmar contraseña',
-                    isPassword: true,
-                    obscureText: !_showConfirmPassword,
-                    onToggleObscure: () => setState(
-                        () => _showConfirmPassword = !_showConfirmPassword),
-                    validator: (v) => validateConfirmPassword(
-                        v, _passwordController.text),
-                    enabled: !_isLoading,
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  AppInputField(
-                    controller: _emailController,
-                    hintText: 'Correo Electrónico',
-                    keyboardType: TextInputType.emailAddress,
-                    validator: validateEmail,
-                    enabled: !_isLoading,
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  AppInputField(
-                    controller: _phoneController,
-                    hintText: 'Número de teléfono',
-                    keyboardType: TextInputType.phone,
-                    validator: validatePhone,
-                    enabled: !_isLoading,
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _acceptTerms,
-                        activeColor: AppColors.turquoise,
-                        checkColor: AppColors.white,
-                        side: const BorderSide(
-                          color: AppColors.turquoise,
-                          width: 2,
-                        ),
-                        onChanged: _isLoading
-                            ? null
-                            : (value) => setState(
-                                () => _acceptTerms = value ?? false),
-                      ),
-                      Expanded(
-                        child: RichText(
-                          text: const TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'Aceptar los ',
-                                style: AppStyles.normalText,
-                              ),
-                              TextSpan(
-                                text: 'Términos y condiciones',
-                                style: AppStyles.linkText,
-                              ),
-                            ],
+                        Center(
+                          child: Image.asset(
+                            'lib/resources/images/chipilogo 2.png',
+                            height: 100,
+                            fit: BoxFit.contain,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
 
-                  const SizedBox(height: 10),
+                        const SizedBox(height: 20),
 
-                  if (_errorText != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Text(
-                        _errorText!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: AppColors.yellow,
-                          fontWeight: FontWeight.w600,
+                        const Text(
+                          'REGÍSTRATE',
+                          textAlign: TextAlign.center,
+                          style: AppStyles.loginTitle,
                         ),
-                      ),
-                    ),
 
-                  const SizedBox(height: 14),
+                        const SizedBox(height: 18),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.turquoise,
-                        foregroundColor: AppColors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                        AppInputField(
+                          controller: _nameController,
+                          hintText: 'Nombre',
+                          validator: validateName,
+                          enabled: !_isLoading,
                         ),
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: AppColors.white,
+
+                        const SizedBox(height: 18),
+
+                        AppInputField(
+                          controller: _lastNameController,
+                          hintText: 'Apellidos',
+                          validator: validateLastName,
+                          enabled: !_isLoading,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        AppInputField(
+                          controller: _passwordController,
+                          hintText: 'Contraseña',
+                          isPassword: true,
+                          obscureText: !_showPassword,
+                          onToggleObscure: () =>
+                              setState(() => _showPassword = !_showPassword),
+                          validator: validatePassword,
+                          enabled: !_isLoading,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        AppInputField(
+                          controller: _confirmPasswordController,
+                          hintText: 'Confirmar contraseña',
+                          isPassword: true,
+                          obscureText: !_showConfirmPassword,
+                          onToggleObscure: () => setState(
+                            () => _showConfirmPassword =
+                                !_showConfirmPassword,
+                          ),
+                          validator: (v) => validateConfirmPassword(
+                            v,
+                            _passwordController.text,
+                          ),
+                          enabled: !_isLoading,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        AppInputField(
+                          controller: _emailController,
+                          hintText: 'Correo Electrónico',
+                          keyboardType: TextInputType.emailAddress,
+                          validator: validateEmail,
+                          enabled: !_isLoading,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        AppInputField(
+                          controller: _phoneController,
+                          hintText: 'Número de teléfono',
+                          keyboardType: TextInputType.phone,
+                          validator: validatePhone,
+                          enabled: !_isLoading,
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _acceptTerms,
+                              activeColor: AppColors.turquoise,
+                              checkColor: AppColors.white,
+                              side: const BorderSide(
+                                color: AppColors.turquoise,
+                                width: 2,
                               ),
-                            )
-                          : const Text(
-                              'Registrarse',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                              onChanged: _isLoading
+                                  ? null
+                                  : (value) => setState(
+                                        () =>
+                                            _acceptTerms = value ?? false,
+                                      ),
+                            ),
+                            Expanded(
+                              child: RichText(
+                                text: const TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'Aceptar los ',
+                                      style: AppStyles.normalText,
+                                    ),
+                                    TextSpan(
+                                      text: 'Términos y condiciones',
+                                      style: AppStyles.linkText,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        if (_errorText != null)
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              _errorText!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: AppColors.yellow,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+
+                        const SizedBox(height: 14),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed:
+                                _isLoading ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  AppColors.turquoise,
+                              foregroundColor:
+                                  AppColors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child:
+                                        CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color:
+                                          AppColors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Registrarse',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight:
+                                          FontWeight.w700,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 35),
+
+                        Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Ya tengo cuenta, ',
+                              style: AppStyles.normalText,
+                            ),
+                            GestureDetector(
+                              onTap: _goToLogin,
+                              child: const Text(
+                                'Iniciar Sesión.',
+                                style: AppStyles.linkText,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 40),
+                      ],
                     ),
                   ),
-
-                  const SizedBox(height: 35),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Ya tengo cuenta, ',
-                        style: AppStyles.normalText,
-                      ),
-                      GestureDetector(
-                        onTap: _goToLogin,
-                        child: const Text(
-                          'Iniciar Sesión.',
-                          style: AppStyles.linkText,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 40),
-                ],
+                ),
               ),
             ),
           ),
