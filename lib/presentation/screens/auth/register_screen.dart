@@ -6,9 +6,8 @@ import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
 import 'package:chipileta_movies_app/domain/datasources/auth_local_datasource.dart';
 import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/register_usecase.dart';
-import 'package:chipileta_movies_app/presentation/screens/movies/home_screen.dart';
-import 'package:chipileta_movies_app/presentation/widgets/input_field.dart';
-import 'package:chipileta_movies_app/presentation/screens/auth/login.dart';
+import 'package:chipileta_movies_app/presentation/widgets/input_field_widget.dart';
+import 'package:chipileta_movies_app/presentation/screens/screen.dart';
 import 'package:chipileta_movies_app/presentation/widgets/button_widget.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -66,34 +65,7 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
 
-    try {
-      final user = await _registerUseCase(
-        name: _nameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        telephone: _phoneController.text.trim(),
-        acceptTerms: _acceptTerms,
-      );
-
-      if (!mounted) return;
-
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Cuenta creada. Bienvenido, ${user.name}')),
-      );
-    } catch (e) {
-      setState(() {
-        _errorText = e.toString().replaceFirst('Exception: ', '');
-      });
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
   }
 
 void _goToLogin() {

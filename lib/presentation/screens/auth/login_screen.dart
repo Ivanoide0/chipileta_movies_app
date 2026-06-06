@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:chipileta_movies_app/presentation/utils/validators.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/resources/styles/styles.dart';
@@ -7,9 +6,8 @@ import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
 import 'package:chipileta_movies_app/domain/datasources/auth_local_datasource.dart';
 import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/login_usecase.dart';
-import 'package:chipileta_movies_app/presentation/screens/auth/register.dart';
-import 'package:chipileta_movies_app/presentation/screens/movies/home_screen.dart';
-import 'package:chipileta_movies_app/presentation/widgets/input_field.dart';
+import 'package:chipileta_movies_app/presentation/screens/screen.dart';
+import 'package:chipileta_movies_app/presentation/widgets/input_field_widget.dart';
 import 'package:chipileta_movies_app/presentation/widgets/button_widget.dart';
 
 class LoginPage extends StatefulWidget {

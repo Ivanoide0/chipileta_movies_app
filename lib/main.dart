@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chipileta_movies_app/theme/app_theme.dart';
-import 'package:chipileta_movies_app/presentation/screens/auth/login.dart';
+import 'package:chipileta_movies_app/presentation/screens/auth/login_screen.dart';
 void main() {
   runApp(const MainApp());
 }
