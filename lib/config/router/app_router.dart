@@ -1,27 +1,66 @@
-// importamos go router, sirve para manejar la navegacion de la app
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:chipileta_movies_app/presentation/screens/screen.dart';
 
-//Usar GoRouter nos ayuda a que nosostros no tengamos que hacer configuraciones especiales si lo queremos usar en la web.
-//Creamos la configuracion global del router
-//Define como navegamos entre pantallas
-final appRouter = GoRouter
-(
-  //Panatlla inicial de la app
-  initialLocation : '/',
+import 'package:chipileta_movies_app/presentation/screens/splash/splash_screen.dart';
+import 'package:chipileta_movies_app/presentation/screens/auth/login_screen.dart';
+import 'package:chipileta_movies_app/presentation/screens/auth/register_screen.dart';
+import 'package:chipileta_movies_app/presentation/screens/movies/home_screen.dart';
 
-  //Lista de rutas disponibles en nuestra app
+final appRouter = GoRouter(
+  initialLocation: '/splash',
   routes: [
-    // Define tus rutas aquí
-
-    GoRoute
-    (
-      //URL de la ruta
-      path: '/',
-      //Nombre de la ruta (util para la navegacion por nombre)
-      name: HomeScreen.name,
-      //Es el buider que se mostrara cuando entremos en nuestra pantalla.
-      builder: (context, state) => const HomeScreen(),
+    GoRoute(
+      path: '/splash',
+      name: 'splash',
+      pageBuilder: (context, state) => _fadeTransitionPage(
+        state: state,
+        child: const SplashScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/login',
+      name: 'login',
+      pageBuilder: (context, state) => _fadeTransitionPage(
+        state: state,
+        child: const LoginPage(),
+      ),
+    ),
+    GoRoute(
+      path: '/register',
+      name: 'register',
+      pageBuilder: (context, state) => _fadeTransitionPage(
+        state: state,
+        child: const RegisterPage(),
+      ),
+    ),
+    GoRoute(
+      path: '/home',
+      name: 'home',
+      pageBuilder: (context, state) => _fadeTransitionPage(
+        state: state,
+        child: const HomeScreen(),
+      ),
     ),
   ],
 );
+
+CustomTransitionPage _fadeTransitionPage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return ColoredBox(
+        color: const Color(0xFF202020),
+        child: FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+      );
+    },
+  );
+}

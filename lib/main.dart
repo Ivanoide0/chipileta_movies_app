@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:chipileta_movies_app/theme/app_theme.dart';
-import 'package:chipileta_movies_app/presentation/screens/auth/login_screen.dart';
+import 'package:chipileta_movies_app/config/router/app_router.dart';
+import 'package:chipileta_movies_app/resources/colors/colors.dart';
+
 void main() {
   runApp(const MainApp());
 }
@@ -10,11 +12,17 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Chipileta Movies',
       theme: AppTheme().getTheme(),
-      home: const LoginPage(),
+      routerConfig: appRouter,
+      builder: (context, child) {
+        return ColoredBox(
+          color: AppColors.backgroundDark,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }
