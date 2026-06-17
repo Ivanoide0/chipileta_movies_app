@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  // Colores originales de la aplicación.
   static const Color backgroundDark = Color(0xFF202020);
 
   static const Color gradientTop = Color(0xFF086A69);
@@ -19,6 +20,31 @@ class AppColors {
     colors: [
       gradientTop,
       gradientBottom,
+    ],
+  );
+
+  // Colores nuevos usados únicamente por la pantalla Home.
+  static const Color homeGradientTop = Color(0xFF08706D);
+  static const Color homeGradientMiddle = Color(0xFF075A68);
+  static const Color homeGradientBottom = Color(0xFF19264F);
+
+  static const Color notificationRed = Color(0xFFE64B4B);
+  static const Color dividerBlue = Color(0xFF6D89AB);
+  static const Color imagePlaceholder = Color(0xFF234B62);
+  static const Color heroText = Color(0xFF17213E);
+
+  static const LinearGradient homeGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    stops: [
+      0,
+      0.48,
+      1,
+    ],
+    colors: [
+      homeGradientTop,
+      homeGradientMiddle,
+      homeGradientBottom,
     ],
   );
 }

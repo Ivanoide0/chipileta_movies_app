@@ -6,6 +6,10 @@ class Movie {
   final double voteAverage;
   final DateTime? releaseDate;
 
+  // Campos nuevos para la pantalla Home.
+  final String backdropPath;
+  final List<int> genreIds;
+
   const Movie({
     required this.id,
     required this.title,
@@ -13,5 +17,9 @@ class Movie {
     required this.posterPath,
     required this.voteAverage,
     this.releaseDate,
+
+    // Valores predeterminados para mantener compatibilidad.
+    this.backdropPath = '',
+    this.genreIds = const [],
   });
 }

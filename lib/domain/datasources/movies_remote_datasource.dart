@@ -1,32 +1,130 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../entities/movie.dart';
+import 'package:http/http.dart' as http;
+
 import '../data/models/movie_model.dart';
+import '../entities/movie.dart';
 import 'movies_datasources.dart';
 
-class MoviesRemoteDatasource implements MoviesDatasource{
+class MoviesRemoteDatasource implements MoviesDatasource {
   final String _baseUrl = dotenv.env['TMDB_BASE_URL']!;
   final String _token = dotenv.env['TMDB_ACCESS_TOKEN']!;
 
-  Map<String, String> get _headers =>{
-    'Authorization': 'Bearer $_token',
-    'accept' : 'application/json'
-  };
+  Map<String, String> get _headers => {
+        'Authorization': 'Bearer $_token',
+        'accept': 'application/json',
+      };
 
+  // Método existente: conserva el mismo endpoint y comportamiento.
   @override
   Future<List<Movie>> getNowPlaying() async {
-    final url = Uri.parse('$_baseUrl/movie/now_playing?language=es-MX&page=1');
+    final url = Uri.parse(
+      '$_baseUrl/movie/now_playing?language=es-MX&page=1',
+    );
 
     final response = await http.get(url, headers: _headers);
 
-    if(response.statusCode != 200){
-      throw Exception('Error al cargar película (${response.statusCode})');
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error al cargar película (${response.statusCode})',
+      );
     }
 
-    final decoded = json.decode(response.body) as Map<String, dynamic>;
+    final decoded =
+        json.decode(response.body) as Map<String, dynamic>;
+
     final results = decoded['results'] as List<dynamic>;
 
-    return results.map((item) => MovieModel.fromJson(item as Map<String, dynamic>)).toList();
+    return results
+        .map(
+          (item) => MovieModel.fromJson(
+            item as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+  }
+
+  // Métodos nuevos para la pantalla Home.
+
+  @override
+  Future<List<Movie>> getPopularMovies() {
+    return _getMovies('/movie/popular');
+  }
+
+  @override
+  Future<List<Movie>> getPopularSeries() {
+    return _getMovies('/tv/popular');
+  }
+
+  @override
+  Future<Map<int, String>> getMovieGenres() {
+    return _getGenres('/genre/movie/list');
+  }
+
+  @override
+  Future<Map<int, String>> getTvGenres() {
+    return _getGenres('/genre/tv/list');
+  }
+
+  Future<List<Movie>> _getMovies(String path) async {
+    final url = Uri.parse('$_baseUrl$path').replace(
+      queryParameters: const {
+        'language': 'es-MX',
+        'page': '1',
+      },
+    );
+
+    final response = await http.get(url, headers: _headers);
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error al cargar contenido (${response.statusCode})',
+      );
+    }
+
+    final decoded =
+        json.decode(response.body) as Map<String, dynamic>;
+
+    final results =
+        decoded['results'] as List<dynamic>? ?? const [];
+
+    return results
+        .map(
+          (item) => MovieModel.fromJson(
+            item as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+  }
+
+  Future<Map<int, String>> _getGenres(String path) async {
+    final url = Uri.parse('$_baseUrl$path').replace(
+      queryParameters: const {
+        'language': 'es-MX',
+      },
+    );
+
+    final response = await http.get(url, headers: _headers);
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error al cargar géneros (${response.statusCode})',
+      );
+    }
+
+    final decoded =
+        json.decode(response.body) as Map<String, dynamic>;
+
+    final genres =
+        decoded['genres'] as List<dynamic>? ?? const [];
+
+    return {
+      for (final item in genres)
+        if (item is Map<String, dynamic> &&
+            item['id'] is num &&
+            item['name'] is String)
+          (item['id'] as num).toInt(): item['name'] as String,
+    };
   }
 }
