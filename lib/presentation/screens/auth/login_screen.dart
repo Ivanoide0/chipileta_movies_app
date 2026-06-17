@@ -1,3 +1,4 @@
+import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -63,6 +64,8 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (!mounted) return;
+
+      SessionService.instance.setUser(user);
 
       context.go('/home');
 

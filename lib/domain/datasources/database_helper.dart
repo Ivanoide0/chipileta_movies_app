@@ -18,8 +18,9 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -50,7 +51,29 @@ class DatabaseHelper {
       )
     ''');
 
+    await _createOpinionsTable(db);
+
     await db.insert('roles', {'rol': 'admin'});
     await db.insert('roles', {'rol': 'usuario'});
+  }
+
+  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if(oldVersion < 2){
+      await _createOpinionsTable(db);
+    }
+  }
+
+  Future _createOpinionsTable(Database db) async{
+    await db.execute('''
+      CREATE TABLE opinions(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        movie_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        rating REAL NOT NULL,
+        comment TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    ''');
   }
 }

@@ -1,6 +1,7 @@
 import '../datasources/movies_datasources.dart';
 import '../entities/movie.dart';
 import 'movies_repository.dart';
+import '../entities/review.dart';
 
 class MoviesRepositoryImpl implements MoviesRepository {
   final MoviesDatasource datasource;
@@ -32,5 +33,10 @@ class MoviesRepositoryImpl implements MoviesRepository {
   @override
   Future<Map<int, String>> getTvGenres() {
     return datasource.getTvGenres();
+  }
+
+  @override
+  Future<List<Review>> getMovieReviews(int movieId) {
+    return datasource.getMovieReviews(movieId);
   }
 }

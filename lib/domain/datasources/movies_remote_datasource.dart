@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import '../data/models/movie_model.dart';
 import '../entities/movie.dart';
 import 'movies_datasources.dart';
+import '../data/models/review_model.dart';
+import '../entities/review.dart';
 
 class MoviesRemoteDatasource implements MoviesDatasource {
   final String _baseUrl = dotenv.env['TMDB_BASE_URL']!;
@@ -65,6 +67,31 @@ class MoviesRemoteDatasource implements MoviesDatasource {
   @override
   Future<Map<int, String>> getTvGenres() {
     return _getGenres('/genre/tv/list');
+  }
+
+  @override
+  Future<List<Review>> getMovieReviews(int movieId) async {
+    final url = Uri.parse('$_baseUrl/movie/$movieId/reviews').replace(
+      queryParameters: const {
+        'language': 'en-US',
+        'page': '1',
+      },
+    );
+
+    final response = await http.get(url, headers: _headers);
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error al cargar reseñas (${response.statusCode})',
+      );
+    }
+
+    final decoded = json.decode(response.body) as Map<String, dynamic>;
+    final results = decoded['results'] as List<dynamic>? ?? const [];
+
+    return results
+      .map((item) => ReviewModel.fromJson(item as Map<String, dynamic>))
+      .toList();
   }
 
   Future<List<Movie>> _getMovies(String path) async {
