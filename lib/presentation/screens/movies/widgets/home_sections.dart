@@ -1,29 +1,36 @@
-import 'package:chipileta_movies_app/domain/entities/movie.dart';
-import 'package:chipileta_movies_app/resources/colors/colors.dart';
-import 'package:flutter/material.dart';
-//!Imports para las opiniones D:
-import 'package:chipileta_movies_app/domain/entities/opinion_with_author.dart';
 import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
+import 'package:chipileta_movies_app/domain/datasources/movies_remote_datasource.dart';
 import 'package:chipileta_movies_app/domain/datasources/opinions_local_datasource.dart';
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
+import 'package:chipileta_movies_app/domain/entities/movie.dart';
+import 'package:chipileta_movies_app/domain/entities/opinion_view.dart';
+import 'package:chipileta_movies_app/domain/entities/opinion_with_author.dart';
+import 'package:chipileta_movies_app/domain/entities/review.dart';
+import 'package:chipileta_movies_app/domain/repositories/movies_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/repositories/opinions_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/add_opinion_usecase.dart';
 import 'package:chipileta_movies_app/domain/usercases/get_all_opinions_with_author_usecase.dart';
-import 'package:chipileta_movies_app/domain/entities/opinion_view.dart';
-import 'package:chipileta_movies_app/domain/entities/review.dart';
-import 'package:chipileta_movies_app/domain/datasources/movies_remote_datasource.dart';
-import 'package:chipileta_movies_app/domain/repositories/movies_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/get_top_reviews_usecase.dart';
+import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:flutter/material.dart';
 
 class HomeSections extends StatelessWidget {
+  final Key? recommendationsKey;
+  final Key? savedKey;
+  final Key? opinionsKey;
+
   final List<Movie> recommendations;
   final List<Movie> movies;
   final List<Movie> series;
+
   final Map<int, String> movieGenres;
   final Map<int, String> tvGenres;
 
   const HomeSections({
     super.key,
+    this.recommendationsKey,
+    this.savedKey,
+    this.opinionsKey,
     required this.recommendations,
     required this.movies,
     required this.series,
@@ -38,33 +45,57 @@ class HomeSections extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionTitle(
-            title: 'Chipi recomendaciones',
-            action: 'Ver todo',
+          Column(
+            key: recommendationsKey,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionTitle(
+                title: 'Chipi recomendaciones',
+                action: 'Ver todo',
+              ),
+              const SizedBox(height: 14),
+              _Recommendations(
+                movies: recommendations.take(10).toList(),
+                genres: movieGenres,
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          _Recommendations(
-            movies: recommendations.take(10).toList(),
-            genres: movieGenres,
+          const SizedBox(height: 30),
+          Column(
+            key: savedKey,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionTitle(
+                title: 'Chipi lista de películas',
+              ),
+              const SizedBox(height: 14),
+              _MediaList(
+                movies: movies.take(3).toList(),
+                genres: movieGenres,
+              ),
+              const SizedBox(height: 28),
+              const _SectionTitle(
+                title: 'Chipi lista de series',
+              ),
+              const SizedBox(height: 14),
+              _MediaList(
+                movies: series.take(3).toList(),
+                genres: tvGenres,
+              ),
+            ],
           ),
-          const SizedBox(height: 22),
-          const _SectionTitle(title: 'Chipi lista de películas'),
-          const SizedBox(height: 12),
-          _MediaList(
-            movies: movies.take(3).toList(),
-            genres: movieGenres,
+          const SizedBox(height: 34),
+          Column(
+            key: opinionsKey,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _OpinionsTitle(),
+              const SizedBox(height: 30),
+              _OpinionsSection(
+                movies: recommendations,
+              ),
+            ],
           ),
-          const SizedBox(height: 22),
-          const _SectionTitle(title: 'Chipi lista de series'),
-          const SizedBox(height: 12),
-          _MediaList(
-            movies: series.take(3).toList(),
-            genres: tvGenres,
-          ),
-          const SizedBox(height: 28),
-          const _OpinionsTitle(),
-          const SizedBox(height: 28),
-          _OpinionsSection(movies: recommendations)
         ],
       ),
     );
@@ -89,8 +120,8 @@ class _SectionTitle extends StatelessWidget {
             title,
             style: const TextStyle(
               color: AppColors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
@@ -99,8 +130,8 @@ class _SectionTitle extends StatelessWidget {
             action!,
             style: const TextStyle(
               color: AppColors.yellow,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
       ],
@@ -120,58 +151,89 @@ class _Recommendations extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (movies.isEmpty) {
-      return const _EmptyMessage('No hay recomendaciones disponibles.');
+      return const _EmptyMessage(
+        'No hay recomendaciones disponibles.',
+      );
     }
 
-    return SizedBox(
-      height: 180,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: movies.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (context, index) {
-          final movie = movies[index];
-
-          return SizedBox(
-            width: 88,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(7),
-                  child: SizedBox(
-                    width: 88,
-                    height: 128,
-                    child: _MovieImage(path: movie.posterPath),
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  movie.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _genreText(movie, genres),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.yellow,
-                    fontSize: 8,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          );
+    return ClipRect(
+      child: ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (bounds) {
+          return const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            stops: [
+              0.0,
+              0.88,
+              1.0,
+            ],
+            colors: [
+              Colors.black,
+              Colors.black,
+              Colors.transparent,
+            ],
+          ).createShader(bounds);
         },
+        child: SizedBox(
+          height: 225,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(
+              left: 4,
+              right: 28,
+            ),
+            itemCount: movies.length,
+            separatorBuilder: (_, __) {
+              return const SizedBox(width: 13);
+            },
+            itemBuilder: (context, index) {
+              final movie = movies[index];
+
+              return SizedBox(
+                width: 112,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: SizedBox(
+                        width: 112,
+                        height: 164,
+                        child: _MovieImage(
+                          path: movie.posterPath,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 9),
+                    Text(
+                      movie.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      _genreText(movie, genres),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.yellow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -189,7 +251,9 @@ class _MediaList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (movies.isEmpty) {
-      return const _EmptyMessage('No hay contenido disponible.');
+      return const _EmptyMessage(
+        'No hay contenido disponible.',
+      );
     }
 
     return Column(
@@ -199,7 +263,8 @@ class _MediaList extends StatelessWidget {
             movie: movies[index],
             genres: genres,
           ),
-          if (index < movies.length - 1) const SizedBox(height: 12),
+          if (index < movies.length - 1)
+            const SizedBox(height: 16),
         ],
       ],
     );
@@ -224,37 +289,40 @@ class _MediaTile extends StatelessWidget {
     return Row(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
           child: SizedBox(
-            width: 88,
-            height: 62,
-            child: _MovieImage(path: imagePath),
+            width: 112,
+            height: 76,
+            child: _MovieImage(
+              path: imagePath,
+            ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 15),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 movie.title,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  height: 1.2,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 9),
               Text(
                 _genreText(movie, genres),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.yellow,
-                  fontSize: 8,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -279,13 +347,15 @@ class _OpinionsTitle extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: 12,
+          ),
           child: Text(
             'Chipi opiniones',
             style: TextStyle(
               color: AppColors.yellow,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -300,11 +370,12 @@ class _OpinionsTitle extends StatelessWidget {
   }
 }
 
-
 class _MovieImage extends StatelessWidget {
   final String path;
 
-  const _MovieImage({required this.path});
+  const _MovieImage({
+    required this.path,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -316,11 +387,17 @@ class _MovieImage extends StatelessWidget {
       'https://image.tmdb.org/t/p/w500$path',
       fit: BoxFit.cover,
       loadingBuilder: (context, child, progress) {
-        return progress == null
-            ? child
-            : const _ImagePlaceholder(showLoader: true);
+        if (progress == null) {
+          return child;
+        }
+
+        return const _ImagePlaceholder(
+          showLoader: true,
+        );
       },
-      errorBuilder: (_, __, ___) => const _ImagePlaceholder(),
+      errorBuilder: (_, __, ___) {
+        return const _ImagePlaceholder();
+      },
     );
   }
 }
@@ -368,9 +445,10 @@ class _EmptyMessage extends StatelessWidget {
       child: Center(
         child: Text(
           message,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             color: AppColors.white70,
-            fontSize: 10,
+            fontSize: 13,
           ),
         ),
       ),
@@ -378,25 +456,34 @@ class _EmptyMessage extends StatelessWidget {
   }
 }
 
-String _genreText(Movie movie, Map<int, String> genres) {
+String _genreText(
+  Movie movie,
+  Map<int, String> genres,
+) {
   final names = movie.genreIds
       .map((id) => genres[id])
       .whereType<String>()
       .take(2)
       .toList();
 
-  return names.isEmpty ? 'Sin género' : names.join(', ');
+  if (names.isEmpty) {
+    return 'Sin género';
+  }
+
+  return names.join(', ');
 }
 
-
-//! Clases para las opiniones:
 class _OpinionsSection extends StatefulWidget {
   final List<Movie> movies;
 
-  const _OpinionsSection({required this.movies});
+  const _OpinionsSection({
+    required this.movies,
+  });
 
   @override
-  State<_OpinionsSection> createState() => _OpinionsSectionState();
+  State<_OpinionsSection> createState() {
+    return _OpinionsSectionState();
+  }
 }
 
 class _OpinionsSectionState extends State<_OpinionsSection> {
@@ -406,8 +493,11 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
 
   late Future<List<OpinionView>> _opinionsFuture;
 
-  final _commentController = TextEditingController();
+  final TextEditingController _commentController =
+      TextEditingController();
+
   Movie? _selectedMovie;
+
   int _rating = 5;
   bool _isSending = false;
   String? _errorText;
@@ -415,14 +505,33 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
   @override
   void initState() {
     super.initState();
-    final datasource = OpinionsLocalDataSource(DatabaseHelper.instance);
-    final repository = OpinionsRepositoryImpl(datasource);
-    _addOpinion = AddOpinionUseCase(repository);
-    _getOpinions = GetAllOpinionsWithAuthorUseCase(repository);
+
+    final datasource = OpinionsLocalDataSource(
+      DatabaseHelper.instance,
+    );
+
+    final repository = OpinionsRepositoryImpl(
+      datasource,
+    );
+
+    _addOpinion = AddOpinionUseCase(
+      repository,
+    );
+
+    _getOpinions = GetAllOpinionsWithAuthorUseCase(
+      repository,
+    );
 
     final moviesDatasource = MoviesRemoteDatasource();
-    final moviesRepository = MoviesRepositoryImpl(moviesDatasource);
-    _getTopReviews = GetTopReviewsUseCase(moviesRepository);
+
+    final moviesRepository = MoviesRepositoryImpl(
+      moviesDatasource,
+    );
+
+    _getTopReviews = GetTopReviewsUseCase(
+      moviesRepository,
+    );
+
     _opinionsFuture = _loadAll();
 
     if (widget.movies.isNotEmpty) {
@@ -443,16 +552,20 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
   }
 
   Future<List<OpinionView>> _loadAll() async {
-    // Las dos fuentes en paralelo.
     final localFuture = _getOpinions();
-    final tmdbFuture = _getTopReviews(movies: widget.movies);
+
+    final tmdbFuture = _getTopReviews(
+      movies: widget.movies,
+    );
 
     final local = await localFuture;
+
     List<Review> tmdb;
+
     try {
       tmdb = await tmdbFuture;
     } catch (_) {
-      tmdb = const []; // si TMDB falla, al menos mostramos las locales
+      tmdb = const [];
     }
 
     return [
@@ -462,26 +575,40 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
   }
 
   Future<void> _submit() async {
-    setState(() => _errorText = null);
+    setState(() {
+      _errorText = null;
+    });
 
     final user = SessionService.instance.currentUser;
+
     if (user == null || user.id == null) {
-      setState(() => _errorText =
-          'Inicia sesión con tu correo para dejar una opinión.');
+      setState(() {
+        _errorText =
+            'Inicia sesión con tu correo para dejar una opinión.';
+      });
+
       return;
     }
 
     if (_selectedMovie == null) {
-      setState(() => _errorText = 'Selecciona una película.');
+      setState(() {
+        _errorText = 'Selecciona una película.';
+      });
+
       return;
     }
 
     if (_commentController.text.trim().isEmpty) {
-      setState(() => _errorText = 'Escribe tu opinión.');
+      setState(() {
+        _errorText = 'Escribe tu opinión.';
+      });
+
       return;
     }
 
-    setState(() => _isSending = true);
+    setState(() {
+      _isSending = true;
+    });
 
     try {
       await _addOpinion(
@@ -492,14 +619,24 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
       );
 
       _commentController.clear();
-      if (!mounted) return;
+
+      if (!mounted) {
+        return;
+      }
+
       _reload();
-    } catch (e) {
+    } catch (error) {
       setState(() {
-        _errorText = e.toString().replaceFirst('Exception: ', '');
+        _errorText = error
+            .toString()
+            .replaceFirst('Exception: ', '');
       });
     } finally {
-      if (mounted) setState(() => _isSending = false);
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+        });
+      }
     }
   }
 
@@ -511,9 +648,12 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
         FutureBuilder<List<OpinionView>>(
           future: _opinionsFuture,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+            if (snapshot.connectionState ==
+                ConnectionState.waiting) {
               return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(
+                  vertical: 16,
+                ),
                 child: Center(
                   child: SizedBox(
                     width: 20,
@@ -537,15 +677,22 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
 
             return Column(
               children: [
-                for (var i = 0; i < opinions.length; i++) ...[
-                  _OpinionTile(item: opinions[i]),
-                  if (i < opinions.length - 1) const SizedBox(height: 20),
+                for (
+                  var index = 0;
+                  index < opinions.length;
+                  index++
+                ) ...[
+                  _OpinionTile(
+                    item: opinions[index],
+                  ),
+                  if (index < opinions.length - 1)
+                    const SizedBox(height: 20),
                 ],
               ],
             );
           },
         ),
-        const SizedBox(height: 24)
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -554,7 +701,9 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
 class _OpinionTile extends StatelessWidget {
   final OpinionView item;
 
-  const _OpinionTile({required this.item});
+  const _OpinionTile({
+    required this.item,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -567,7 +716,7 @@ class _OpinionTile extends StatelessWidget {
             item.initials,
             style: const TextStyle(
               color: AppColors.heroText,
-              fontSize: 10,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -583,7 +732,7 @@ class _OpinionTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.yellow,
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -594,7 +743,8 @@ class _OpinionTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.white70,
-                  fontSize: 8,
+                  fontSize: 12,
+                  height: 1.35,
                 ),
               ),
             ],
@@ -603,14 +753,14 @@ class _OpinionTile extends StatelessWidget {
         const Icon(
           Icons.star_rounded,
           color: AppColors.yellow,
-          size: 15,
+          size: 19,
         ),
         const SizedBox(width: 3),
         Text(
           item.rating.toStringAsFixed(1),
           style: const TextStyle(
             color: AppColors.yellow,
-            fontSize: 9,
+            fontSize: 12,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -619,16 +769,20 @@ class _OpinionTile extends StatelessWidget {
   }
 }
 
-OpinionView _fromLocal(OpinionWithAuthor o) => OpinionView(
-      authorName: o.fullName,
-      comment: o.opinion.comment,
-      rating: o.opinion.rating,
-      fromTmdb: false,
-    );
+OpinionView _fromLocal(OpinionWithAuthor opinion) {
+  return OpinionView(
+    authorName: opinion.fullName,
+    comment: opinion.opinion.comment,
+    rating: opinion.opinion.rating,
+    fromTmdb: false,
+  );
+}
 
-OpinionView _fromTmdb(Review r) => OpinionView(
-      authorName: r.author,
-      comment: r.content,
-      rating: (r.rating ?? 0) / 2,
-      fromTmdb: true,
-    );
+OpinionView _fromTmdb(Review review) {
+  return OpinionView(
+    authorName: review.author,
+    comment: review.content,
+    rating: (review.rating ?? 0) / 2,
+    fromTmdb: true,
+  );
+}

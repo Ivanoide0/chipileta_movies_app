@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:flutter/material.dart';
@@ -18,12 +20,66 @@ class HomeFeatured extends StatefulWidget {
 
 class _HomeFeaturedState extends State<HomeFeatured> {
   final PageController _controller = PageController();
+
+  Timer? _autoScrollTimer;
   int _currentPage = 0;
 
   List<Movie> get _movies => widget.movies.take(5).toList();
 
   @override
+  void initState() {
+    super.initState();
+    _startAutoScroll();
+  }
+
+  @override
+  void didUpdateWidget(covariant HomeFeatured oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final oldLength = oldWidget.movies.take(5).length;
+    final newLength = _movies.length;
+
+    if (oldLength != newLength && _currentPage >= newLength) {
+      _currentPage = 0;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_controller.hasClients) {
+          return;
+        }
+
+        _controller.jumpToPage(0);
+      });
+    }
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer?.cancel();
+
+    _autoScrollTimer = Timer.periodic(
+      const Duration(seconds: 4),
+      (_) {
+        if (!mounted || !_controller.hasClients || _movies.length < 2) {
+          return;
+        }
+
+        if (_controller.position.isScrollingNotifier.value) {
+          return;
+        }
+
+        final nextPage = (_currentPage + 1) % _movies.length;
+
+        _controller.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 650),
+          curve: Curves.easeInOutCubic,
+        );
+      },
+    );
+  }
+
+  @override
   void dispose() {
+    _autoScrollTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -37,11 +93,15 @@ class _HomeFeaturedState extends State<HomeFeatured> {
     return Column(
       children: [
         SizedBox(
-          height: 150,
+          height: 170,
           child: PageView.builder(
             controller: _controller,
             itemCount: _movies.length,
             onPageChanged: (index) {
+              if (!mounted) {
+                return;
+              }
+
               setState(() {
                 _currentPage = index;
               });
@@ -59,18 +119,22 @@ class _HomeFeaturedState extends State<HomeFeatured> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
             _movies.length,
-            (index) => AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: index == _currentPage ? 18 : 5,
-              height: 5,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              decoration: BoxDecoration(
-                color: index == _currentPage
-                    ? AppColors.yellow
-                    : AppColors.white70,
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
+            (index) {
+              final isSelected = index == _currentPage;
+
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: isSelected ? 18 : 5,
+                height: 5,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.yellow
+                      : AppColors.white70,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -119,7 +183,7 @@ class _FeaturedCard extends StatelessWidget {
                     'Películas\ndestacadas',
                     style: TextStyle(
                       color: AppColors.heroText,
-                      fontSize: 18,
+                      fontSize: 21,
                       height: 1.05,
                       fontWeight: FontWeight.w800,
                     ),
@@ -133,13 +197,14 @@ class _FeaturedCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: AppColors.heroText,
-                      fontSize: 9,
+                      fontSize: 11,
                       height: 1.25,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const Spacer(),
                   SizedBox(
-                    height: 30,
+                    height: 34,
                     child: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
@@ -154,7 +219,7 @@ class _FeaturedCard extends StatelessWidget {
                       child: const Text(
                         'Ver ahora',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -183,18 +248,6 @@ class _FeaturedCard extends StatelessWidget {
                   const ColoredBox(
                     color: AppColors.imagePlaceholder,
                   ),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        AppColors.yellow,
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
                 Positioned(
                   left: 10,
                   right: 8,
@@ -206,7 +259,7 @@ class _FeaturedCard extends StatelessWidget {
                     textAlign: TextAlign.right,
                     style: const TextStyle(
                       color: AppColors.white,
-                      fontSize: 11,
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
                       shadows: [
                         Shadow(
@@ -224,4 +277,4 @@ class _FeaturedCard extends StatelessWidget {
       ),
     );
   }
-}
+} 

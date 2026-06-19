@@ -14,6 +14,10 @@ class AppColors {
   static const Color white70 = Colors.white70;
   static const Color white54 = Colors.white54;
 
+  static const Color footerBackground = Color(0xFF1D2452);
+  static const Color footerActive = Color(0xFFFDE125);
+  static const Color footerInactive = Color(0xFFB0B0B3);
+
   static const LinearGradient loginGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
