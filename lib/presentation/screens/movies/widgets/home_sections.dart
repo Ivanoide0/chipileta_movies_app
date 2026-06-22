@@ -54,8 +54,8 @@ class HomeSections extends StatelessWidget {
                 action: 'Ver todo',
               ),
               const SizedBox(height: 14),
-              _Recommendations(
-                movies: recommendations.take(10).toList(),
+              _MediaList(
+                movies: recommendations.take(14).toList(),
                 genres: movieGenres,
               ),
             ],
@@ -348,7 +348,7 @@ class _OpinionsTitle extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: 12,
+            horizontal: 8,
           ),
           child: Text(
             'Chipi opiniones',

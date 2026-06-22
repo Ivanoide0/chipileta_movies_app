@@ -401,7 +401,7 @@ class _FooterItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: selected
                       ? AppColors.footerActive
-                      : Colors.transparent,
+                      : const Color.fromARGB(0, 63, 6, 6),
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
