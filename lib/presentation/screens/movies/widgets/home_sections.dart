@@ -55,7 +55,7 @@ class HomeSections extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               _MediaList(
-                movies: recommendations.take(14).toList(),
+                movies: recommendations.take(10).toList(),
                 genres: movieGenres,
               ),
             ],
@@ -70,7 +70,7 @@ class HomeSections extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               _MediaList(
-                movies: movies.take(3).toList(),
+                movies: movies.take(5).toList(),
                 genres: movieGenres,
               ),
               const SizedBox(height: 28),
@@ -79,7 +79,7 @@ class HomeSections extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               _MediaList(
-                movies: series.take(3).toList(),
+                movies: series.take(5).toList(),
                 genres: tvGenres,
               ),
             ],
