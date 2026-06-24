@@ -19,7 +19,7 @@ class HomeHeader extends StatelessWidget {
                   'Bienvenido',
                   style: TextStyle(
                     color: AppColors.heroText,
-                    fontSize: 14,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -28,7 +28,7 @@ class HomeHeader extends StatelessWidget {
                   "Vamo' a chipilear con unas pelis",
                   style: TextStyle(
                     color: AppColors.white54,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

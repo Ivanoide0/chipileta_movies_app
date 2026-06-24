@@ -221,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     parent: BouncingScrollPhysics(),
                   ),
                   padding: const EdgeInsets.only(
-                    bottom: 40,
+                    bottom: 8,
                   ),
                   children: [
                     const HomeHeader(),
@@ -378,10 +378,9 @@ class _FooterItem extends StatelessWidget {
         button: true,
         selected: selected,
         label: label,
-        child: InkResponse(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: onTap,
-          radius: 34,
-          highlightShape: BoxShape.rectangle,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

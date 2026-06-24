@@ -84,13 +84,13 @@ class HomeSections extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 34),
+          const SizedBox(height: 24),
           Column(
             key: opinionsKey,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const _OpinionsTitle(),
-              const SizedBox(height: 30),
+              const SizedBox(height: 18),
               _OpinionsSection(
                 movies: recommendations,
               ),
@@ -692,7 +692,7 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
             );
           },
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 4),
       ],
     );
   }
