@@ -18,7 +18,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       onConfigure: (db) async {
@@ -41,12 +41,13 @@ class DatabaseHelper {
         nombre TEXT NOT NULL,
         apellido TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
+        password TEXT,
         telefono TEXT NOT NULL,
         acepto_terminos INTEGER NOT NULL,
         rol_id INTEGER NOT NULL,
         is_active INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL,
+        google_id TEXT,
         FOREIGN KEY (rol_id) REFERENCES roles(id)
       )
     ''');
@@ -60,6 +61,11 @@ class DatabaseHelper {
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if(oldVersion < 2){
       await _createOpinionsTable(db);
+    }
+    if(oldVersion < 3){
+      await db.execute('PRAGMA foreign_keys = OFF');
+      await _migrateUsersForGoogle(db);
+      await db.execute('PRAGMA foreign_keys = ON');
     }
   }
 
@@ -75,5 +81,42 @@ class DatabaseHelper {
         FOREIGN KEY (user_id) REFERENCES users(id)
       )
     ''');
+  }
+
+  Future _migrateUsersForGoogle(Database db) async{
+    await db.transaction((txn) async{
+      await txn.execute('ALTER TABLE users ADD COLUMN google_id TEXT');
+
+      await txn.execute('''
+        CREATE TABLE users_new(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nombre TEXT NOT NULL,
+          apellido TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          password TEXT,
+          telefono TEXT NOT NULL,
+          acepto_terminos INTEGER NOT NULL,
+          rol_id INTEGER NOT NULL,
+          is_active INTEGER NOT NULL DEFAULT 1,
+          created_at TEXT NOT NULL,
+          google_id TEXT,
+          FOREIGN KEY (rol_id) REFERENCES roles(id)
+        )
+      ''');
+
+      await txn.execute('''
+        INSERT INTO users_new(
+          id, nombre, apellido, email, password, telefono, acepto_terminos, rol_id,
+          is_active, created_at, google_id
+        )
+        SELECT 
+          id, nombre, apellido, email, password, telefono, acepto_terminos, rol_id,
+          is_active, created_at, google_id
+        FROM users
+      ''');
+
+      await txn.execute('DROP TABLE users');
+      await txn.execute('ALTER TABLE users_new RENAME TO users');
+    });
   }
 }

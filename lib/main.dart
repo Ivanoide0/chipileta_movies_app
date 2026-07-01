@@ -1,4 +1,5 @@
 import 'package:chipileta_movies_app/config/router/app_router.dart';
+import 'package:chipileta_movies_app/domain/datasources/google_auth_service.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: '.env');
+  await GoogleAuthService().initialize();
 
   runApp(const MainApp());
 }
