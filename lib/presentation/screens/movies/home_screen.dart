@@ -302,7 +302,7 @@ class _HomeFooter extends StatelessWidget {
               ),
               _FooterItem(
                 label: 'Guardados',
-                icon: Icons.save_alt_outlined,
+                icon: Icons.save,
                 boxedIcon: true,
                 selected: currentIndex == 2,
                 onTap: () {
