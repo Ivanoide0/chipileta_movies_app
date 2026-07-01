@@ -1,11 +1,16 @@
 import '../entities/user.dart';
 import 'auth_repository.dart';
 import '../datasources/auth_local_datasource.dart';
+import '../datasources/google_auth_service.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSource localDataSource;
+  final GoogleAuthService googleAuthService;
 
-  AuthRepositoryImpl(this.localDataSource);
+  AuthRepositoryImpl(
+    this.localDataSource, [
+      GoogleAuthService? googleAuthService,
+    ]) : googleAuthService = googleAuthService ?? GoogleAuthService();
 
   @override
   Future<User> register({
@@ -36,6 +41,14 @@ class AuthRepositoryImpl implements AuthRepository {
       email: email,
       password: password
     );
+    return userModel.toEntity();
+  }
+
+  @override
+  Future<User> signInWithGoogle() async{
+    final googleData = await googleAuthService.signIn();
+    final userModel = await localDataSource.loginOrRegisterWithGoogle(googleData);
+
     return userModel.toEntity();
   }
 }

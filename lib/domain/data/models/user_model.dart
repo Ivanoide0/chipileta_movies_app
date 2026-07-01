@@ -1,7 +1,8 @@
 import '../../entities/user.dart';
 
 class UserModel extends User {
-  final String passwordHash;
+  final String? passwordHash;
+  final String? googleId;
 
   const UserModel({
     super.id,
@@ -13,7 +14,8 @@ class UserModel extends User {
     required super.isActive,
     required super.createdAt,
     required super.rolId,
-    required this.passwordHash,
+    this.passwordHash,
+    this.googleId
   });
 
   Map<String, dynamic>toMap()=>{
@@ -27,6 +29,7 @@ class UserModel extends User {
     'rol_id': rolId,
     'is_active': isActive ? 1 : 0,
     'created_at': createdAt.toIso8601String(),
+    'google_id': googleId
   };
 
   factory UserModel.fromMap(Map<String, dynamic> map) => UserModel(
@@ -34,12 +37,13 @@ class UserModel extends User {
     name: map['nombre'] as String,
     lastName: map['apellido'] as String,
     email: map['email'] as String,
-    passwordHash: map['password'] as String,
+    passwordHash: map['password'] as String?,
     telephone: map['telefono'] as String,
     acceptTerms: (map['acepto_terminos'] as int == 1),
     rolId: map['rol_id'] as int,
     isActive: (map['is_active'] as int == 1),
     createdAt: DateTime.parse(map['created_at'] as String),
+    googleId: map['google_id'] as String?
   );
 
   User toEntity() => User(

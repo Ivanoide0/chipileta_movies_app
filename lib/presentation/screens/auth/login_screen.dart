@@ -1,4 +1,5 @@
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
+import 'package:chipileta_movies_app/presentation/widgets/google_sign_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,6 +13,7 @@ import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.da
 import 'package:chipileta_movies_app/domain/usercases/login_usecase.dart';
 import 'package:chipileta_movies_app/presentation/widgets/input_field_widget.dart';
 import 'package:chipileta_movies_app/presentation/widgets/button_widget.dart';
+import 'package:chipileta_movies_app/domain/usercases/sign_in_with_google_usecase.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -27,11 +29,13 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   late final LoginUseCase _loginUseCase;
+  late final SignInWithGoogleUseCase _googleUseCase;
   final DeviceAuthService _deviceAuthService = DeviceAuthService();
 
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _isDeviceAuthLoading = false;
+  bool _isGoogleLoading = false;
   String? _errorText;
 
   @override
@@ -40,6 +44,7 @@ class _LoginPageState extends State<LoginPage> {
     final dataSource = AuthLocalDataSource(DatabaseHelper.instance);
     final repository = AuthRepositoryImpl(dataSource);
     _loginUseCase = LoginUseCase(repository);
+    _googleUseCase = SignInWithGoogleUseCase(repository);
   }
 
   @override
@@ -118,13 +123,42 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _loginWithGoogle() async{
+    setState(() {
+      _errorText = null;
+      _isGoogleLoading = true;
+    });
+
+    try{
+      final user = await _googleUseCase();
+      if(!mounted) return;
+
+      SessionService.instance.setUser(user);
+
+      context.go('/home');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bienvenido, ${user.name}'))
+      );
+    } catch(e){
+      if(!mounted) return;
+      setState(() {
+        _errorText = e.toString().replaceFirst('Exception: ', '');
+      });
+    } finally{
+      if(mounted){
+        setState(() => _isGoogleLoading = false);
+      }
+    }
+  }
+
   void _goToRegister() {
     context.go('/register');
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool buttonsDisabled = _isLoading || _isDeviceAuthLoading;
+    final bool buttonsDisabled = _isLoading || _isDeviceAuthLoading || _isGoogleLoading;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -205,6 +239,11 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed:
                               buttonsDisabled ? null : _loginWithDeviceAuth,
                           isLoading: _isDeviceAuthLoading,
+                        ),
+                        const SizedBox(height: 14),
+                        GoogleSignInButton(
+                          onPressed: buttonsDisabled ? null : _loginWithGoogle,
+                          isLoading: _isGoogleLoading,
                         ),
                         const SizedBox(height: 18),
                         const Text(
