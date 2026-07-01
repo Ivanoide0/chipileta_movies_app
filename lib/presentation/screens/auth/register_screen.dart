@@ -31,6 +31,19 @@ class _RegisterPageState extends State<RegisterPage> {
 
   late final RegisterUseCase _registerUseCase;
 
+  static const List<String> _termsAndConditions = [
+    'Chipi+ es una aplicación de visualización de películas y contenido audiovisual para uso personal y no comercial.',
+    'El usuario debe proporcionar información real y actualizada al crear su cuenta.',
+    'La cuenta es personal. El usuario es responsable de mantener segura su contraseña y evitar compartir sus credenciales.',
+    'El contenido disponible en Chipi+ puede variar según disponibilidad, actualizaciones del catálogo o mejoras de la aplicación.',
+    'Está prohibido copiar, grabar, redistribuir, vender o publicar el contenido de Chipi+ sin autorización.',
+    'El usuario se compromete a utilizar la aplicación de forma respetuosa y a no realizar acciones que afecten el funcionamiento del servicio.',
+    'Chipi+ puede mostrar reseñas, opiniones o valoraciones creadas por usuarios, siempre que respeten normas básicas de convivencia.',
+    'Algunas películas o contenidos pueden tener clasificación por edad; el usuario acepta ver contenido adecuado para su edad.',
+    'Para reproducir contenido correctamente, el usuario debe contar con conexión a internet y un dispositivo compatible.',
+    'Chipi+ puede actualizar estos términos de forma estática dentro de la aplicación cuando sea necesario para mejorar la experiencia del usuario.',
+  ];
+
   bool _showPassword = false;
   bool _showConfirmPassword = false;
   bool _acceptTerms = false;
@@ -99,6 +112,187 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _goToLogin() {
     context.go('/login');
+  }
+
+  void _showTermsAndConditionsDialog() {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: .72),
+      builder: (context) {
+        final screenHeight = MediaQuery.of(context).size.height;
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 20,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 430,
+              maxHeight: screenHeight * 0.86,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.gradientTop,
+                    AppColors.gradientBottom,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: AppColors.turquoise.withValues(alpha: .85),
+                  width: 1.4,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .48),
+                    blurRadius: 28,
+                    offset: const Offset(0, 16),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 14, 14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 46,
+                            width: 46,
+                            decoration: BoxDecoration(
+                              color: AppColors.yellow,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: const Icon(
+                              Icons.movie_creation_outlined,
+                              color: AppColors.backgroundDark,
+                              size: 27,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Términos y condiciones',
+                                  style: TextStyle(
+                                    color: AppColors.yellow,
+                                    fontSize: 21,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Chipi+ streaming',
+                                  style: TextStyle(
+                                    color: AppColors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: AppColors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.turquoise.withValues(alpha: 0),
+                            AppColors.turquoise,
+                            AppColors.yellow,
+                            AppColors.turquoise.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: const [
+                          _TermsTag(text: 'Películas'),
+                          _TermsTag(text: 'Cuenta personal'),
+                          _TermsTag(text: 'Catálogo digital'),
+                        ],
+                      ),
+                    ),
+
+                    Flexible(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(20, 6, 20, 10),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
+                            _termsAndConditions.length,
+                            (index) => _TermItem(
+                              number: index + 1,
+                              text: _termsAndConditions[index],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.yellow,
+                            foregroundColor: AppColors.backgroundDark,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: const Text(
+                            'Entendido',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -212,19 +406,23 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ),
                             ),
                             Expanded(
-                              child: RichText(
-                                text: const TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: 'Aceptar los ',
-                                      style: AppStyles.normalText,
-                                    ),
-                                    TextSpan(
-                                      text: 'Términos y condiciones',
+                              child: Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Aceptar los ',
+                                    style: AppStyles.normalText,
+                                  ),
+                                  GestureDetector(
+                                    onTap: _isLoading
+                                        ? null
+                                        : _showTermsAndConditionsDialog,
+                                    child: const Text(
+                                      'Términos y condiciones',
                                       style: AppStyles.linkText,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -274,6 +472,94 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TermsTag extends StatelessWidget {
+  final String text;
+
+  const _TermsTag({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundDark.withValues(alpha: .28),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.white.withValues(alpha: .18),
+        ),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _TermItem extends StatelessWidget {
+  final int number;
+  final String text;
+
+  const _TermItem({
+    required this.number,
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundDark.withValues(alpha: .34),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.turquoise.withValues(alpha: .22),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 26,
+            width: 26,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppColors.turquoise,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              '$number',
+              style: const TextStyle(
+                color: AppColors.backgroundDark,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: AppColors.white,
+                fontSize: 14,
+                height: 1.35,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
