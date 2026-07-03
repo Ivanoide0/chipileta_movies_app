@@ -94,6 +94,34 @@ class MoviesRemoteDatasource implements MoviesDatasource {
       .toList();
   }
 
+  @override
+  Future<List<Movie>> searchMovies(String query) async{
+    final trimmed = query.trim();
+    if(trimmed.isEmpty) return const [];
+
+    final url = Uri.parse('$_baseUrl/search/movie').replace(
+      queryParameters: {
+        'language': 'es-MX',
+        'page': '1',
+        'include_adult': 'false',
+        'query': trimmed
+      }
+    );
+
+    final response = await http.get(url, headers: _headers);
+
+    if(response.statusCode != 200){
+      throw Exception(
+        'Error al buscar películas (${response.statusCode})',
+      );
+    }
+
+    final decoded = json.decode(response.body) as Map<String, dynamic>;
+    final results = decoded['results'] as List<dynamic>? ?? const [];
+
+  return results.map((item) => MovieModel.fromJson(item as Map<String, dynamic>)).toList();
+}
+
   Future<List<Movie>> _getMovies(String path) async {
     final url = Uri.parse('$_baseUrl$path').replace(
       queryParameters: const {

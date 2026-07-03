@@ -2,7 +2,11 @@ import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:flutter/material.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  final VoidCallback? onSearchTap;
+  const HomeHeader({
+    super.key,
+    this.onSearchTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +40,7 @@ class HomeHeader extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: onSearchTap,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(
               minWidth: 38,
