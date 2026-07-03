@@ -1,3 +1,18 @@
+const Set<String> _allowedEmailDomains = {
+  'gmail.com',
+  'hotmail.com',
+  'outlook.com',
+  'outlook.es',
+  'hotmail.es',
+  'live.com',
+  'live.com.mx',
+  'yahoo.com',
+  'yahoo.com.mx',
+  'icloud.com',
+  'proton.me',
+  'protonmail.com',
+};
+
 bool looksLikeEmail(String input){
   final v = input.trim();
   final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
@@ -5,9 +20,15 @@ bool looksLikeEmail(String input){
 }
 
 String? validateEmail(String? value){
-  final v = value?.trim() ?? '';
+  final v = value?.trim().toLowerCase() ?? '';
   if(v.isEmpty) return 'El correo es requerido.';
   if(!looksLikeEmail(v)) return 'El correo no es válido.';
+  
+  final domain = v.split('@').last;
+  if(!_allowedEmailDomains.contains(domain)){
+    return 'Usa un correo de un proveedor válido\n(Gmail, Hotmail, Outlook, etc.)';
+  }
+  
   return null;
 }
 
@@ -35,7 +56,7 @@ String? validatePhone(String? value){
   if(v.isEmpty) return 'El teléfono es requerido.';
   final digitsOnly = RegExp(r'^\d+$');
   if(!digitsOnly.hasMatch(v)) return 'El teléfono solo debe contener números.';
-  if(v.length < 8 || v.length > 15) return 'El teléfono debe tener entre 8 y 15 dígitos.';
+  if(v.length < 8 || v.length > 10) return 'El teléfono debe tener entre 8 y 10 dígitos.';
   return null;
 }
 
