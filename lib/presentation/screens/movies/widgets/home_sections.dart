@@ -12,6 +12,7 @@ import 'package:chipileta_movies_app/domain/usercases/add_opinion_usecase.dart';
 import 'package:chipileta_movies_app/domain/usercases/get_all_opinions_with_author_usecase.dart';
 import 'package:chipileta_movies_app/domain/usercases/get_top_reviews_usecase.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'package:flutter/material.dart';
 
 class HomeSections extends StatelessWidget {
@@ -299,9 +300,11 @@ class _MediaTile extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 15),
+
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 movie.title,
@@ -328,7 +331,79 @@ class _MediaTile extends StatelessWidget {
             ],
           ),
         ),
+
+        const SizedBox(width: 10),
+
+        AnimatedBuilder(
+          animation: movieListsController,
+          builder: (context, _) {
+            final isFavorite = movieListsController.isFavorite(movie);
+            final isSaved = movieListsController.isSaved(movie);
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _MovieActionButton(
+                  icon: isFavorite
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  isActive: isFavorite,
+                  onTap: () {
+                    movieListsController.toggleFavorite(movie);
+                  },
+                ),
+                const SizedBox(height: 6),
+                _MovieActionButton(
+                  icon: isSaved
+                      ? Icons.file_download
+                      : Icons.file_download_outlined,
+                  isActive: isSaved,
+                  onTap: () {
+                    movieListsController.toggleSaved(movie);
+                  },
+                ),
+              ],
+            );
+          },
+        ),
       ],
+    );
+  }
+}
+
+class _MovieActionButton extends StatelessWidget {
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _MovieActionButton({
+    required this.icon,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withOpacity(0.45),
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 160),
+            scale: isActive ? 1.15 : 1,
+            curve: Curves.easeOutBack,
+            child: Icon(
+              icon,
+              size: 17,
+              color: isActive ? AppColors.yellow : AppColors.white,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -37,10 +37,12 @@ final appRouter = GoRouter(
         child: const RegisterPage(),
       ),
     ),
+
+    // Pantallas principales con animación suave entre pestañas
     GoRoute(
       path: '/home',
       name: HomeScreen.name,
-      pageBuilder: (context, state) => _fadePage(
+      pageBuilder: (context, state) => _tabPage(
         state: state,
         child: const HomeScreen(),
       ),
@@ -48,7 +50,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/favorites',
       name: FavoritesScreen.name,
-      pageBuilder: (context, state) => _fadePage(
+      pageBuilder: (context, state) => _tabPage(
         state: state,
         child: const FavoritesScreen(),
       ),
@@ -56,7 +58,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/downloads',
       name: DownloadsScreen.name,
-      pageBuilder: (context, state) => _fadePage(
+      pageBuilder: (context, state) => _tabPage(
         state: state,
         child: const DownloadsScreen(),
       ),
@@ -64,7 +66,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/profile',
       name: ProfileScreen.name,
-      pageBuilder: (context, state) => _fadePage(
+      pageBuilder: (context, state) => _tabPage(
         state: state,
         child: const ProfileScreen(),
       ),
@@ -72,11 +74,11 @@ final appRouter = GoRouter(
   ],
 );
 
-CustomTransitionPage _fadePage({
+CustomTransitionPage<void> _fadePage({
   required GoRouterState state,
   required Widget child,
 }) {
-  return CustomTransitionPage(
+  return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
     transitionDuration: const Duration(milliseconds: 260),
@@ -87,6 +89,42 @@ CustomTransitionPage _fadePage({
         child: FadeTransition(
           opacity: animation,
           child: child,
+        ),
+      );
+    },
+  );
+}
+
+CustomTransitionPage<void> _tabPage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 320),
+    reverseTransitionDuration: const Duration(milliseconds: 260),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return ColoredBox(
+        color: AppColors.homeGradientBottom,
+        child: FadeTransition(
+          opacity: Tween<double>(
+            begin: 0.92,
+            end: 1,
+          ).animate(curvedAnimation),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.05, 0),
+              end: Offset.zero,
+            ).animate(curvedAnimation),
+            child: child,
+          ),
         ),
       );
     },

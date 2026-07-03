@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'package:flutter/material.dart';
 
 class HomeFeatured extends StatefulWidget {
@@ -248,6 +249,44 @@ class _FeaturedCard extends StatelessWidget {
                   const ColoredBox(
                     color: AppColors.imagePlaceholder,
                   ),
+
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: AnimatedBuilder(
+                    animation: movieListsController,
+                    builder: (context, _) {
+                      final isFavorite =
+                          movieListsController.isFavorite(movie);
+                      final isSaved = movieListsController.isSaved(movie);
+
+                      return Row(
+                        children: [
+                          _MovieActionButton(
+                            icon: isFavorite
+                                ? Icons.star_rounded
+                                : Icons.star_border_rounded,
+                            isActive: isFavorite,
+                            onTap: () {
+                              movieListsController.toggleFavorite(movie);
+                            },
+                          ),
+                          const SizedBox(width: 6),
+                          _MovieActionButton(
+                            icon: isSaved
+                                ? Icons.file_download
+                                : Icons.file_download_outlined,
+                            isActive: isSaved,
+                            onTap: () {
+                              movieListsController.toggleSaved(movie);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+
                 Positioned(
                   left: 10,
                   right: 8,
@@ -277,4 +316,41 @@ class _FeaturedCard extends StatelessWidget {
       ),
     );
   }
-} 
+}
+
+class _MovieActionButton extends StatelessWidget {
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _MovieActionButton({
+    required this.icon,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withOpacity(0.55),
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(7),
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 160),
+            scale: isActive ? 1.15 : 1,
+            curve: Curves.easeOutBack,
+            child: Icon(
+              icon,
+              size: 19,
+              color: isActive ? AppColors.yellow : AppColors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
