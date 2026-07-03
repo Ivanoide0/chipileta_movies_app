@@ -57,7 +57,7 @@ Future<bool> showLogoutConfirmDialog(BuildContext context) async {
     context: context,
     barrierDismissible: false,
     builder: (context) => AlertDialog(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: AppColors.homeGradientTop,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
