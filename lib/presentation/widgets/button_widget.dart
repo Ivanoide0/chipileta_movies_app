@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 
-class AppButton extends StatelessWidget{
+class AppButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
@@ -48,4 +48,49 @@ class AppButton extends StatelessWidget{
       ),
     );
   }
+}
+
+/// Helper para confirmar cierre de sesión.
+/// Retorna true si el usuario confirma, false si cancela.
+Future<bool> showLogoutConfirmDialog(BuildContext context) async {
+  final result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      backgroundColor: AppColors.backgroundDark,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      title: const Text(
+        'Cerrar sesión',
+        style: TextStyle(
+          color: AppColors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: const Text(
+        '¿Estás seguro de que deseas cerrar sesión?',
+        style: TextStyle(color: AppColors.white),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text(
+            'Cancelar',
+            style: TextStyle(color: AppColors.white),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.yellow,
+            foregroundColor: AppColors.backgroundDark,
+          ),
+          child: const Text('Sí, cerrar sesión'),
+        ),
+      ],
+    ),
+  );
+
+  return result ?? false;
 }

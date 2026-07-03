@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/home_footer.dart';
+import 'package:chipileta_movies_app/presentation/widgets/button_widget.dart';
 
 class ProfileScreen extends StatelessWidget {
   static const name = 'profile-screen';
@@ -127,7 +128,17 @@ class ProfileScreen extends StatelessWidget {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: () => context.go('/login'),
+                          onPressed: () async {
+                            final confirm = await showLogoutConfirmDialog(context);
+                            if (!confirm) return;
+
+                            // Aquí puedes limpiar sesión si lo necesitas:
+                            // await SessionService.instance.logout();
+
+                            if (context.mounted) {
+                              context.go('/login');
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: AppColors.yellow,
