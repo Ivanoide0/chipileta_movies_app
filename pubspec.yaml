@@ -61,6 +61,9 @@ flutter_launcher_icons:
   ios: true
   image_path: "lib/resources/images/ChipiPolloTe.png"
 
+  adaptive_icon_background: "#086A69"
+  adaptive_icon_foreground: "lib/resources/images/chipilogo 2.png"
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
