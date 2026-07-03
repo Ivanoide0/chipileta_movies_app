@@ -10,6 +10,7 @@ import 'widgets/home_featured.dart';
 import 'widgets/home_footer.dart';
 import 'widgets/home_header.dart';
 import 'widgets/home_sections.dart';
+import 'widgets/movie_search_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   static const name = 'home-screen';
@@ -104,7 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   padding: const EdgeInsets.only(bottom: 10),
                   children: [
-                    const HomeHeader(),
+                    HomeHeader(
+                      onSearchTap: () => _openSearch(content.movieGenres),
+                    ),
                     const SizedBox(height: 22),
                     HomeFeatured(
                       movies: content.featured,
@@ -125,6 +128,20 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _openSearch(Map<int, String> movieGenres){
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return FractionallySizedBox(
+          heightFactor: 0.92,
+          child: MovieSearchSheet(movieGenres: movieGenres)
+        );
+      }
     );
   }
 }

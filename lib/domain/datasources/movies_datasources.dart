@@ -13,4 +13,6 @@ abstract class MoviesDatasource {
   Future<Map<int, String>> getMovieGenres();
 
   Future<Map<int, String>> getTvGenres();
+
+  Future<List<Movie>> searchMovies(String query);
 }

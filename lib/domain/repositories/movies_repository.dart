@@ -14,4 +14,6 @@ abstract class MoviesRepository {
   Future<Map<int, String>> getTvGenres();
 
   Future<List<Review>> getMovieReviews(int movieId);
+
+  Future<List<Movie>> searchMovies(String query);
 }
