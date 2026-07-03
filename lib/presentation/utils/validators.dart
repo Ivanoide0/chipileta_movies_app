@@ -56,7 +56,7 @@ String? validatePhone(String? value){
   if(v.isEmpty) return 'El teléfono es requerido.';
   final digitsOnly = RegExp(r'^\d+$');
   if(!digitsOnly.hasMatch(v)) return 'El teléfono solo debe contener números.';
-  if(v.length < 8 || v.length > 10) return 'El teléfono debe tener entre 8 y 10 dígitos.';
+  if(v.length <= 9|| v.length > 10) return 'El teléfono debe tener 10 dígitos.';
   return null;
 }
 
