@@ -34,8 +34,23 @@ String? validateEmail(String? value){
 
 String? validatePassword(String? value){
   final v = value ?? '';
+
   if(v.isEmpty) return 'La contraseña es requerida.';
-  if(v.length < 6) return 'La contraseña debe tener al menos 6 caracteres.';
+  if(v.length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
+
+  if(!RegExp(r'[A-Z]').hasMatch(v)){
+    return 'Debe incluir al menos una letra mayúscula.';
+  }
+  if(!RegExp(r'[a-z]').hasMatch(v)){
+    return 'Debe incluir al menos una letra minúscula.';
+  }
+  if(!RegExp(r'[0-9]').hasMatch(v)){
+    return 'Debe incluir al menos un número.';
+  }
+  if(!RegExp(r'[!@#$%^&*(),.?":{}|<>_\-\[\]\\/~`+=;'"'"']').hasMatch(v)){
+    return 'Debe incluir al menos un carácter especial.';
+  }
+
   return null;
 }
 
