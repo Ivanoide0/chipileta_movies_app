@@ -84,8 +84,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final user = await _registerUseCase(
-        name: _nameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
+        name: capitalizeWords(_nameController.text),
+        lastName: capitalizeWords(_nameController.text),
         email: _emailController.text.trim(),
         password: _passwordController.text,
         telephone: _phoneController.text.trim(),

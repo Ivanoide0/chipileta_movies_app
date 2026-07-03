@@ -39,16 +39,31 @@ String? validatePassword(String? value){
   return null;
 }
 
+final _onlyLetters = RegExp(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ ]+$");
+
 String? validateName(String? value){
   final v = value?.trim() ?? '';
   if(v.isEmpty) return 'El nombre es requerido.';
+  if(!_onlyLetters.hasMatch(v)) return 'El nombre solo debe contener letras.';
   return null;
 }
 
 String? validateLastName(String? value){
   final v = value?.trim() ?? '';
   if(v.isEmpty) return 'El apellido es requerido.';
+  if(!_onlyLetters.hasMatch(v)) return 'El apellido solo debe contener letras.';
   return null;
+}
+
+String capitalizeWords(String value){
+  final trimmed = value.trim();
+  if(trimmed.isEmpty) return '';
+
+  return trimmed.split(RegExp(r'\s+'))
+    .map((word){
+      if(word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
 }
 
 String? validatePhone(String? value){
