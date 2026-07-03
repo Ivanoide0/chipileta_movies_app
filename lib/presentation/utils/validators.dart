@@ -36,7 +36,7 @@ String? validatePassword(String? value){
   final v = value ?? '';
 
   if(v.isEmpty) return 'La contraseña es requerida.';
-  if(v.length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
+  if(v.length < 8) return 'La contraseña debe tener\n al menos 8 caracteres.';
 
   if(!RegExp(r'[A-Z]').hasMatch(v)){
     return 'Debe incluir al menos una letra mayúscula.';
