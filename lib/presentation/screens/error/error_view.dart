@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:chipileta_movies_app/presentation/screens/error/chipi_bird_game.dart';
 
 enum ErrorViewType { notFound, noConnection, general }
 
@@ -171,7 +172,21 @@ class ErrorView extends StatelessWidget {
                         ),
                       ),
                     ),
-                  )
+                  ),
+                  if(type == ErrorViewType.noConnection)...[
+                    const SizedBox(height: 14),
+                    TextButton(
+                      onPressed: () => ChipiBirdGame.show(context),
+                      child: const Text(
+                        'Jugar ChipiBird',
+                        style: TextStyle(
+                          color: AppColors.turquoise,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700
+                        ),
+                      )
+                    )
+                  ]
                 ],
               ),
             ),
