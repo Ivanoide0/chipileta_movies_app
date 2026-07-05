@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:http/http.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chipileta_movies_app/domain/datasources/movies_remote_datasource.dart';
@@ -5,6 +7,7 @@ import 'package:chipileta_movies_app/domain/entities/home_content.dart';
 import 'package:chipileta_movies_app/domain/repositories/movies_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/get_home_content_usecase.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:chipileta_movies_app/presentation/screens/error/error_view.dart';
 
 import 'widgets/home_featured.dart';
 import 'widgets/home_footer.dart';
@@ -75,10 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
               }
 
               if (snapshot.hasError) {
-                return _ErrorView(
-                  error: snapshot.error,
-                  onRetry: _retry,
-                );
+                final error = snapshot.error;
+                final isConnectionError = error is SocketException || error is ClientException;
+
+                if(isConnectionError){
+                  return ErrorView.noConnection(onRetry: _retry);
+                }
+                return const ErrorView.general();
               }
 
               final content = snapshot.data;

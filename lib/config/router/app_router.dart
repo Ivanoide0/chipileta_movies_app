@@ -9,6 +9,7 @@ import 'package:chipileta_movies_app/presentation/screens/movies/home_screen.dar
 import 'package:chipileta_movies_app/presentation/screens/movies/favorites_screen.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/downloads_screen.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/profile_screen.dart';
+import 'package:chipileta_movies_app/presentation/screens/error/error_view.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -72,6 +73,7 @@ final appRouter = GoRouter(
       ),
     ),
   ],
+  errorBuilder: (context, state) => const ErrorView.notFound()
 );
 
 CustomTransitionPage<void> _fadePage({
