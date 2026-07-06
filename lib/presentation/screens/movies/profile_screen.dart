@@ -190,7 +190,7 @@ class _ProfileInput extends StatelessWidget {
         children: [
           const Icon(
             Icons.person_outline_rounded,
-            color: AppColors.yellow,
+            color: Colors.deepPurpleAccent,
             size: 24,
           ),
           const SizedBox(width: 14),

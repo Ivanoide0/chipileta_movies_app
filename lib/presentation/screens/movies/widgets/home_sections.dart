@@ -355,8 +355,8 @@ class _MediaTile extends StatelessWidget {
                 const SizedBox(height: 6),
                 _MovieActionButton(
                   icon: isSaved
-                      ? Icons.save_rounded
-                      : Icons.save_outlined,
+                      ? Icons.file_download
+                      : Icons.file_download_outlined,
                   isActive: isSaved,
                   onTap: () {
                     movieListsController.toggleSaved(movie);
