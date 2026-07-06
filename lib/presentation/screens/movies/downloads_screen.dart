@@ -71,7 +71,7 @@ class DownloadsScreen extends StatelessWidget {
 
                           return _MovieCard(
                             movie: movie,
-                            icon: Icons.file_download,
+                            icon: Icons.save_outlined,
                             onRemove: () {
                               movieListsController.removeSaved(movie);
                             },
@@ -102,7 +102,7 @@ class _EmptyDownloads extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.file_download_outlined,
+              Icons.save_outlined,
               color: AppColors.yellow,
               size: 92,
             ),
