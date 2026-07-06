@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
@@ -39,11 +40,15 @@ class _ChipiBirdGameState extends State<ChipiBirdGame>
   static const double _groundHeight = 40;
 
   static const String _logoAsset = 'lib/resources/images/chipilogo 2.png';
+  static const String _jumpSound = 'sounds/jump.wav';
 
   late final Ticker _ticker;
   Duration _lastTick = Duration.zero;
   final Random _random = Random();
-
+  
+  static const int _audioPoolSize = 7;
+  final List<AudioPlayer> _audioPool = [];
+  int _audioIndex = 0;
   ui.Image? _birdImage;
 
   double _birdY = _gameHeight/2;
@@ -58,8 +63,24 @@ class _ChipiBirdGameState extends State<ChipiBirdGame>
   void initState(){
     super.initState();
     _resetGame();
+    _loadBirdImage();
+    _initAudio();
     _ticker = createTicker(_onTick);
     _ticker.start();
+  }
+
+  Future<void> _initAudio() async{
+    try{
+      for(int i = 0; i < _audioPoolSize; i++){
+        final player = AudioPlayer();
+        await player.setReleaseMode(ReleaseMode.stop);
+        await player.setSource(AssetSource(_jumpSound));
+        await player.setVolume(1.0);
+        _audioPool.add(player);
+      }
+    }catch(_){
+
+    }
   }
 
   Future<void> _loadBirdImage() async{
@@ -84,9 +105,24 @@ class _ChipiBirdGameState extends State<ChipiBirdGame>
     }
   }
 
+  void _playJumpSound() async{
+    if(_audioPool.isEmpty) return;
+
+    // Toma el siguiente reproductor del pool en rotación.
+    final player = _audioPool[_audioIndex];
+    _audioIndex = (_audioIndex + 1) % _audioPool.length;
+
+    // Dispara sin await: no bloquea el frame del salto. Los errores se
+    // ignoran para no interrumpir el juego.
+    player.seek(Duration.zero).then((_) => player.resume()).catchError((_){});
+  }
+
   @override
   void dispose() {
     _ticker.dispose();
+    for(final player in _audioPool){
+      player.dispose();
+    }
     super.dispose();
   }
 
@@ -179,9 +215,11 @@ class _ChipiBirdGameState extends State<ChipiBirdGame>
       case _GameState.idle:
         _state = _GameState.playing;
         _birdVelocity = _flapVelocity;
+        _playJumpSound();
         break;
       case _GameState.playing:
         _birdVelocity = _flapVelocity;
+        _playJumpSound();
         break;
       case _GameState.gameOver:
         setState(_resetGame);
@@ -439,7 +477,7 @@ class _ChipiBirdPainter extends CustomPainter{
     String? subtitle;
 
     if(state == _GameState.idle){
-      title = '¡Toca para vola!';
+      title = '¡Toca para volar!';
       subtitle = 'Esquiva los tubos';
     }else if(state == _GameState.gameOver){
       title = 'Game Over';
