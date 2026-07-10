@@ -48,17 +48,6 @@ class ErrorView extends StatelessWidget {
     }
   }
 
-  String get _code {
-    switch(type){
-      case ErrorViewType.notFound:
-        return '404';
-      case ErrorViewType.noConnection:
-        return '500';
-      case ErrorViewType.general:
-        return 'Ups';
-    }
-  }
-
   String get _title {
     switch(type){
       case ErrorViewType.notFound:
@@ -115,17 +104,6 @@ class ErrorView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  //Codigo del error
-                  Text(
-                    _code,
-                    style: const TextStyle(
-                      color: AppColors.yellow,
-                      fontSize: 52,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1
-                    ),
-                  ),
-                  const SizedBox(height: 8),
 
                   Text(
                     _title,
