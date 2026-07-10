@@ -5,6 +5,7 @@ import 'package:chipileta_movies_app/domain/repositories/movies_repository_impl.
 import 'package:chipileta_movies_app/domain/usercases/search_movies_usecase.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:flutter/material.dart';
+import 'media_detail_screen.dart';
 
 class MovieSearchSheet extends StatefulWidget {
   final Map<int, String> movieGenres;
@@ -278,54 +279,113 @@ class _SearchResultTile extends StatelessWidget {
     required this.genres,
   });
 
+  Future<void> _openDetails(BuildContext context) async {
+    /*
+     * Guardamos el Navigator antes de cerrar el buscador porque el
+     * context de esta tarjeta dejará de existir al cerrar el modal.
+     */
+    final navigator = Navigator.of(context);
+
+    await navigator.maybePop();
+
+    if (!navigator.mounted) return;
+
+    await navigator.push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => MediaDetailScreen(
+          movie: movie,
+        ),
+      ),
+    );
+  }
+
+  String get _subtitle {
+    final year = movie.releaseDate?.year.toString();
+    final typeText = movie.mediaTypeLabel;
+
+    /*
+     * Home actualmente entrega únicamente los géneros de películas.
+     * Para las series no usamos ese mapa porque los IDs de género
+     * pueden representar nombres distintos.
+     */
+    if (movie.isTv) {
+      return year == null ? typeText : '$typeText · $year';
+    }
+
+    final genreText = _genreText(movie, genres);
+
+    if (year == null) {
+      return '$typeText · $genreText';
+    }
+
+    return '$typeText · $year · $genreText';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: SizedBox(
-            width: 54,
-            height: 80,
-            child: _PosterImage(path: movie.posterPath),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openDetails(context),
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 2,
           ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                movie.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 15,
-                  height: 1.2,
-                  fontWeight: FontWeight.w700,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 54,
+                  height: 80,
+                  child: _PosterImage(
+                    path: movie.posterPath,
+                  ),
                 ),
               ),
-              const SizedBox(height: 6),
-              // Género en lugar de duración.
-              Text(
-                _genreText(movie, genres),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.yellow,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movie.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 15,
+                        height: 1.2,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.yellow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.white54,
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
-
 class _PosterImage extends StatelessWidget {
   final String path;
 

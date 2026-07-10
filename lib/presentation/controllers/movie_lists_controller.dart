@@ -10,16 +10,22 @@ class MovieListsController extends ChangeNotifier {
   List<Movie> get saved => List.unmodifiable(_saved);
 
   bool isFavorite(Movie movie) {
-    return _favorites.any((item) => item.id == movie.id);
+    return _favorites.any(
+      (item) => item.storageKey == movie.storageKey,
+    );
   }
 
   bool isSaved(Movie movie) {
-    return _saved.any((item) => item.id == movie.id);
+    return _saved.any(
+      (item) => item.storageKey == movie.storageKey,
+    );
   }
 
   void toggleFavorite(Movie movie) {
     if (isFavorite(movie)) {
-      _favorites.removeWhere((item) => item.id == movie.id);
+      _favorites.removeWhere(
+        (item) => item.storageKey == movie.storageKey,
+      );
     } else {
       _favorites.add(movie);
     }
@@ -29,7 +35,9 @@ class MovieListsController extends ChangeNotifier {
 
   void toggleSaved(Movie movie) {
     if (isSaved(movie)) {
-      _saved.removeWhere((item) => item.id == movie.id);
+      _saved.removeWhere(
+        (item) => item.storageKey == movie.storageKey,
+      );
     } else {
       _saved.add(movie);
     }
@@ -38,12 +46,18 @@ class MovieListsController extends ChangeNotifier {
   }
 
   void removeFavorite(Movie movie) {
-    _favorites.removeWhere((item) => item.id == movie.id);
+    _favorites.removeWhere(
+      (item) => item.storageKey == movie.storageKey,
+    );
+
     notifyListeners();
   }
 
   void removeSaved(Movie movie) {
-    _saved.removeWhere((item) => item.id == movie.id);
+    _saved.removeWhere(
+      (item) => item.storageKey == movie.storageKey,
+    );
+
     notifyListeners();
   }
 }

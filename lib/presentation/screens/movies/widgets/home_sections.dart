@@ -14,6 +14,7 @@ import 'package:chipileta_movies_app/domain/usercases/get_top_reviews_usecase.da
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'movie_action_feedback.dart';
+import 'media_detail_screen.dart';
 import 'package:flutter/material.dart';
 
 class HomeSections extends StatelessWidget {
@@ -282,6 +283,16 @@ class _MediaTile extends StatelessWidget {
     required this.genres,
   });
 
+  void _openDetails(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MediaDetailScreen(
+          movie: movie,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final imagePath = movie.backdropPath.isNotEmpty
@@ -290,75 +301,89 @@ class _MediaTile extends StatelessWidget {
 
     return Row(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: SizedBox(
-            width: 112,
-            height: 76,
-            child: _MovieImage(
-              path: imagePath,
+        Expanded(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () => _openDetails(context),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: SizedBox(
+                      width: 112,
+                      height: 76,
+                      child: _MovieImage(
+                        path: imagePath,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          movie.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontSize: 15,
+                            height: 1.2,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 9),
+                        Text(
+                          _genreText(movie, genres),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.yellow,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-        const SizedBox(width: 15),
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                movie.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 15,
-                  height: 1.2,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 9),
-              Text(
-                _genreText(movie, genres),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.yellow,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-
         const SizedBox(width: 10),
-
         AnimatedBuilder(
           animation: movieListsController,
           builder: (context, _) {
-            final isFavorite = movieListsController.isFavorite(movie);
-            final isSaved = movieListsController.isSaved(movie);
+            final isFavorite =
+                movieListsController.isFavorite(movie);
+            final isSaved =
+                movieListsController.isSaved(movie);
 
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _MovieActionButton(
-  icon: isFavorite
-      ? Icons.star_rounded
-      : Icons.star_border_rounded,
-  isActive: isFavorite,
-  onTap: () => handleFavoriteTap(context, movie),
-),
+                  icon: isFavorite
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  isActive: isFavorite,
+                  onTap: () {
+                    handleFavoriteTap(context, movie);
+                  },
+                ),
                 const SizedBox(height: 6),
                 _MovieActionButton(
-  icon: isSaved
-      ? Icons.save
-      : Icons.save,
-  isActive: isSaved,
-  onTap: () => handleSavedTap(context, movie)
-),
+                  icon: Icons.save,
+                  isActive: isSaved,
+                  onTap: () {
+                    handleSavedTap(context, movie);
+                  },
+                ),
               ],
             );
           },
@@ -367,7 +392,6 @@ class _MediaTile extends StatelessWidget {
     );
   }
 }
-
 class _MovieActionButton extends StatefulWidget {
   final IconData icon;
   final bool isActive;

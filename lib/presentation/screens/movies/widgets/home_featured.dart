@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:chipileta_movies_app/presentation/screens/movies/widgets/media_detail_screen.dart';
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
@@ -209,8 +209,15 @@ class _FeaturedCard extends StatelessWidget {
                   SizedBox(
                     height: 34,
                     child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
+onPressed: () {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => MediaDetailScreen(
+        movie: movie,
+      ),
+    ),
+  );
+},                      style: ElevatedButton.styleFrom(
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,

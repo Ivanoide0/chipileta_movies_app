@@ -4,6 +4,7 @@ import 'package:chipileta_movies_app/domain/entities/movie.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/home_footer.dart';
+import 'package:chipileta_movies_app/presentation/screens/movies/widgets/media_detail_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {
   static const name = 'favorites-screen';
@@ -146,10 +147,21 @@ class _MovieCard extends StatelessWidget {
     required this.onRemove,
   });
 
+  void _openDetails(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MediaDetailScreen(
+          movie: movie,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final imagePath =
-        movie.posterPath.isNotEmpty ? movie.posterPath : movie.backdropPath;
+    final imagePath = movie.posterPath.isNotEmpty
+        ? movie.posterPath
+        : movie.backdropPath;
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -175,11 +187,57 @@ class _MovieCard extends StatelessWidget {
               color: AppColors.imagePlaceholder,
             ),
 
+          /*
+           * Esta capa abre el detalle al tocar cualquier parte
+           * de la tarjeta, excepto el botón de eliminar.
+           */
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _openDetails(context),
+                splashColor: AppColors.yellow.withValues(alpha: .18),
+                highlightColor: Colors.transparent,
+              ),
+            ),
+          ),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: .85),
+                    ],
+                  ),
+                ),
+                child: Text(
+                  movie.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           Positioned(
             top: 8,
             right: 8,
             child: Material(
-              color: Colors.black.withOpacity(0.55),
+              color: Colors.black.withValues(alpha: .55),
               shape: const CircleBorder(),
               child: InkWell(
                 customBorder: const CircleBorder(),
@@ -191,35 +249,6 @@ class _MovieCard extends StatelessWidget {
                     color: AppColors.yellow,
                     size: 19,
                   ),
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.85),
-                  ],
-                ),
-              ),
-              child: Text(
-                movie.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
