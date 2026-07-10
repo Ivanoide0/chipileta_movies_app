@@ -157,6 +157,39 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 28),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final confirm = await showLogoutConfirmDialog(context);
+                            if (!confirm) return;
+
+                            // Aquí puedes limpiar sesión si lo necesitas:
+                            // await SessionService.instance.logout();
+
+                            if (context.mounted) {
+                              context.go('/ruta_inexistente');
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: AppColors.yellow,
+                            foregroundColor: AppColors.heroText,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                          ),
+                          child: const Text(
+                            'Romper todo',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
                     ],
                   ),
                 ),
