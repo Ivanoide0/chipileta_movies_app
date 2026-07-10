@@ -1,6 +1,7 @@
 import 'package:chipileta_movies_app/config/router/app_router.dart';
 import 'package:chipileta_movies_app/domain/datasources/google_auth_service.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:chipileta_movies_app/services/notification_service.dart';
 import 'package:chipileta_movies_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,6 +11,7 @@ Future<void> main() async {
 
   await dotenv.load(fileName: '.env');
   await GoogleAuthService().initialize();
+  await NotificationService.instance.init();
 
   runApp(const MainApp());
 }

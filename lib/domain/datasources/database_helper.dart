@@ -18,7 +18,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       onConfigure: (db) async {
@@ -53,6 +53,7 @@ class DatabaseHelper {
     ''');
 
     await _createOpinionsTable(db);
+    await _createNotificationsTable(db);
 
     await db.insert('roles', {'rol': 'admin'});
     await db.insert('roles', {'rol': 'usuario'});
@@ -66,6 +67,9 @@ class DatabaseHelper {
       await db.execute('PRAGMA foreign_keys = OFF');
       await _migrateUsersForGoogle(db);
       await db.execute('PRAGMA foreign_keys = ON');
+    }
+    if(oldVersion < 4){
+      await _createNotificationsTable(db);
     }
   }
 
@@ -118,5 +122,19 @@ class DatabaseHelper {
       await txn.execute('DROP TABLE users');
       await txn.execute('ALTER TABLE users_new RENAME TO users');
     });
+  }
+
+  Future _createNotificationsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE notifications(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        movie_id INTEGER NOT NULL,
+        movie_title TEXT NOT NULL,
+        movie_poster TEXT NOT NULL,
+        type TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        is_read INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
   }
 }
