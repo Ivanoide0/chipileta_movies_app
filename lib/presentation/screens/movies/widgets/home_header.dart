@@ -1,11 +1,15 @@
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:chipileta_movies_app/presentation/controllers/notifications_controller.dart';
 
 class HomeHeader extends StatelessWidget {
   final VoidCallback? onSearchTap;
+  final VoidCallback? onNotificationsTap;
+
   const HomeHeader({
     super.key,
     this.onSearchTap,
+    this.onNotificationsTap,
   });
 
   @override
@@ -52,31 +56,41 @@ class HomeHeader extends StatelessWidget {
               size: 25,
             ),
           ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              IconButton(
-                onPressed: () {},
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: 38,
-                  minHeight: 38,
-                ),
-                icon: const Icon(
-                  Icons.notifications_none_rounded,
-                  color: AppColors.yellow,
-                  size: 25,
-                ),
-              ),
-              const Positioned(
-                top: 4,
-                right: 4,
-                child: CircleAvatar(
-                  radius: 4,
-                  backgroundColor: AppColors.notificationRed,
-                ),
-              ),
-            ],
+          AnimatedBuilder(
+            animation: notificationsController,
+            builder: (context, _) {
+              final hasUnread = notificationsController.hasUnread;
+
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    onPressed: onNotificationsTap,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 38,
+                      minHeight: 38,
+                    ),
+                    icon: Icon(
+                      hasUnread
+                          ? Icons.notifications_rounded
+                          : Icons.notifications_none_rounded,
+                      color: AppColors.yellow,
+                      size: 25,
+                    ),
+                  ),
+                  if (hasUnread)
+                    const Positioned(
+                      top: 4,
+                      right: 4,
+                      child: CircleAvatar(
+                        radius: 4,
+                        backgroundColor: AppColors.notificationRed,
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ],
       ),

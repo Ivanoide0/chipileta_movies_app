@@ -8,6 +8,8 @@ import 'package:chipileta_movies_app/domain/repositories/movies_repository_impl.
 import 'package:chipileta_movies_app/domain/usercases/get_home_content_usecase.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/screens/error/error_view.dart';
+import 'package:chipileta_movies_app/presentation/controllers/notifications_controller.dart';
+import 'widgets/notifications_sheet.dart';
 
 import 'widgets/home_featured.dart';
 import 'widgets/home_footer.dart';
@@ -37,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _getHomeContent = GetHomeContentUseCase(repository);
     _contentFuture = _getHomeContent();
+    notificationsController.load();
   }
 
   Future<void> _reload() async {
@@ -113,6 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     HomeHeader(
                       onSearchTap: () => _openSearch(content.movieGenres),
+                      onNotificationsTap: _openNotifications,
                     ),
                     const SizedBox(height: 22),
                     HomeFeatured(
@@ -148,6 +152,21 @@ class _HomeScreenState extends State<HomeScreen> {
           child: MovieSearchSheet(movieGenres: movieGenres)
         );
       }
+    );
+  }
+
+  void _openNotifications() {
+    notificationsController.markAllRead();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return const FractionallySizedBox(
+          heightFactor: 0.92,
+          child: NotificationsSheet(),
+        );
+      },
     );
   }
 }

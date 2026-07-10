@@ -13,6 +13,9 @@ import 'package:chipileta_movies_app/domain/usercases/get_all_opinions_with_auth
 import 'package:chipileta_movies_app/domain/usercases/get_top_reviews_usecase.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
+import 'package:chipileta_movies_app/services/notification_service.dart';
+import 'package:chipileta_movies_app/domain/entities/app_notification.dart';
+import 'package:chipileta_movies_app/presentation/controllers/notifications_controller.dart';
 import 'package:flutter/material.dart';
 
 class HomeSections extends StatelessWidget {
@@ -357,6 +360,14 @@ class _MediaTile extends StatelessWidget {
       context,
       added: willBeFavorite,
     );
+
+    if(willBeFavorite){
+      notificationsController.addForMovie(movie, NotificationType.favorite);
+      NotificationService.instance.show(
+        title: 'Añadida a favoritos', 
+        body: '${movie.title} está en tus favoritos'
+      );
+    }
   },
 ),
                 const SizedBox(height: 6),
@@ -374,6 +385,14 @@ class _MediaTile extends StatelessWidget {
       context,
       added: willBeSaved,
     );
+
+    if(willBeSaved){
+      notificationsController.addForMovie(movie, NotificationType.saved);
+      NotificationService.instance.show(
+        title: 'Película guardada', 
+        body: '${movie.title} está guardada, revisalo cuando quieras.'
+      );
+    }
   },
 ),
               ],
