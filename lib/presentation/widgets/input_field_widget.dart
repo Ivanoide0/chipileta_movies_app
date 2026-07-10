@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 
 class AppInputField extends StatelessWidget {
@@ -52,15 +51,9 @@ class AppInputField extends StatelessWidget {
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
-
         filled: true,
         fillColor: AppColors.backgroundDark.withValues(alpha: 0.35),
-
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 17,
-        ),
-
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide(
@@ -68,7 +61,6 @@ class AppInputField extends StatelessWidget {
             width: 1.2,
           ),
         ),
-
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide(
@@ -76,7 +68,6 @@ class AppInputField extends StatelessWidget {
             width: 1.2,
           ),
         ),
-
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: const BorderSide(
@@ -84,7 +75,6 @@ class AppInputField extends StatelessWidget {
             width: 1.8,
           ),
         ),
-
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: const BorderSide(
@@ -92,7 +82,6 @@ class AppInputField extends StatelessWidget {
             width: 1.8,
           ),
         ),
-
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: const BorderSide(
@@ -100,16 +89,13 @@ class AppInputField extends StatelessWidget {
             width: 2.1,
           ),
         ),
-
         errorMaxLines: 3,
-
         errorStyle: const TextStyle(
           color: AppColors.yellow,
           fontSize: 12.5,
           fontWeight: FontWeight.w700,
           height: 1.25,
         ),
-
         suffixIcon: isPassword
             ? IconButton(
                 onPressed: onToggleObscure,
