@@ -5,6 +5,8 @@ import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'package:flutter/material.dart';
 
+import 'movie_action_feedback.dart';
+
 class HomeFeatured extends StatefulWidget {
   final List<Movie> movies;
   final Map<int, String> genres;
@@ -267,9 +269,7 @@ class _FeaturedCard extends StatelessWidget {
                                 ? Icons.star_rounded
                                 : Icons.star_border_rounded,
                             isActive: isFavorite,
-                            onTap: () {
-                              movieListsController.toggleFavorite(movie);
-                            },
+                            onTap: () => handleFavoriteTap(context, movie),
                           ),
                           const SizedBox(width: 6),
                           _MovieActionButton(
@@ -277,9 +277,7 @@ class _FeaturedCard extends StatelessWidget {
                                 ? Icons.save
                                 : Icons.save,
                             isActive: isSaved,
-                            onTap: () {
-                              movieListsController.toggleSaved(movie);
-                            },
+                            onTap: () => handleSavedTap(context, movie),
                           ),
                         ],
                       );
