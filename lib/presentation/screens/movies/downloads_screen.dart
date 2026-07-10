@@ -71,7 +71,7 @@ class DownloadsScreen extends StatelessWidget {
 
                           return _MovieCard(
                             movie: movie,
-                            icon: Icons.saved_search,
+                            icon: Icons.save,
                             onRemove: () {
                               movieListsController.removeSaved(movie);
                             },
