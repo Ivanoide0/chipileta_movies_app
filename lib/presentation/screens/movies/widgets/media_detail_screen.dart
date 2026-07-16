@@ -1661,7 +1661,7 @@ class _ErrorView extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    message ?? 'Revisa tu conexión e inténtalo nuevamente.',
+                    'Revisa tu conexión e inténtalo nuevamente.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: AppColors.white70,
