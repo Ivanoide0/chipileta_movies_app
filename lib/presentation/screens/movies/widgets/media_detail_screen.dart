@@ -5,10 +5,11 @@ import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
 import 'package:chipileta_movies_app/domain/datasources/movies_remote_datasource.dart';
 import 'package:chipileta_movies_app/domain/datasources/opinions_local_datasource.dart';
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
+import 'package:chipileta_movies_app/domain/entities/actor_detail.dart';
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
 import 'package:chipileta_movies_app/domain/entities/opinion_with_author.dart';
 import 'package:chipileta_movies_app/domain/entities/review.dart';
-import 'package:chipileta_movies_app/domain/repositories/opinions_repository_impl.dart';  
+import 'package:chipileta_movies_app/domain/repositories/opinions_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/add_opinion_usecase.dart';
 import 'package:chipileta_movies_app/domain/usercases/get_all_opinions_with_author_usecase.dart';
 import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
@@ -37,7 +38,6 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
   late Future<List<OpinionWithAuthor>> _opinionsFuture;
 
   final TextEditingController _commentController = TextEditingController();
-  final GlobalKey _trailerSectionKey = GlobalKey();
 
   int _rating = 5;
   bool _isSending = false;
@@ -53,9 +53,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     );
 
     _addOpinion = AddOpinionUseCase(opinionsRepository);
-    _getAllOpinions = GetAllOpinionsWithAuthorUseCase(
-      opinionsRepository,
-    );
+    _getAllOpinions = GetAllOpinionsWithAuthorUseCase(opinionsRepository);
 
     _detailFuture = _moviesDatasource.getMediaDetail(widget.movie);
     _opinionsFuture = _loadOpinions();
@@ -71,9 +69,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     final opinions = await _getAllOpinions();
 
     return opinions
-        .where(
-          (item) => item.opinion.movieId == widget.movie.opinionId,
-        )
+        .where((item) => item.opinion.movieId == widget.movie.opinionId)
         .toList(growable: false);
   }
 
@@ -99,18 +95,42 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     });
   }
 
-  void _scrollToTrailer() {
-    final trailerContext = _trailerSectionKey.currentContext;
-
-    if (trailerContext == null) {
+  void _openTrailerModal(Movie movie) {
+    if (!movie.hasTrailer) {
+      _showMessage('No hay un tráiler disponible para este título.');
       return;
     }
 
-    Scrollable.ensureVisible(
-      trailerContext,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeOutCubic,
-      alignment: 0.08,
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Cerrar tráiler',
+      barrierColor: Colors.black.withValues(alpha: .72),
+      transitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return _TrailerCenterDialog(
+          title: movie.title,
+          videoId: movie.trailerKey,
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(
+              begin: 0.92,
+              end: 1,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
     );
   }
 
@@ -119,9 +139,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     final comment = _commentController.text.trim();
 
     if (user == null || user.id == null) {
-      _showMessage(
-        'Inicia sesión con tu correo para publicar una opinión.',
-      );
+      _showMessage('Inicia sesión con tu correo para publicar una opinión.');
       return;
     }
 
@@ -145,9 +163,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
       _commentController.clear();
       FocusScope.of(context).unfocus();
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         _rating = 5;
@@ -156,9 +172,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
 
       _showMessage('Tu opinión fue publicada.');
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       _showMessage(
         error.toString().replaceFirst('Exception: ', ''),
@@ -233,7 +247,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                       padding: const EdgeInsets.fromLTRB(18, 20, 18, 0),
                       child: _PrimaryActions(
                         movie: movie,
-                        onTrailerTap: _scrollToTrailer,
+                        onTrailerTap: () => _openTrailerModal(movie),
                       ),
                     ),
                   ),
@@ -241,15 +255,6 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(18, 28, 18, 0),
                       child: _OverviewSection(movie: movie),
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    key: _trailerSectionKey,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 28, 18, 0),
-                      child: _TrailerSection(
-                        videoId: movie.trailerKey,
-                      ),
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -333,9 +338,8 @@ class _DetailHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backdropPath = movie.backdropPath.isNotEmpty
-        ? movie.backdropPath
-        : movie.posterPath;
+    final backdropPath =
+        movie.backdropPath.isNotEmpty ? movie.backdropPath : movie.posterPath;
 
     return Stack(
       fit: StackFit.expand,
@@ -593,9 +597,7 @@ class _PrimaryActions extends StatelessWidget {
             onPressed: movie.hasTrailer ? onTrailerTap : null,
             icon: const Icon(Icons.play_arrow_rounded, size: 25),
             label: Text(
-              movie.hasTrailer
-                  ? 'Ver tráiler'
-                  : 'Tráiler no disponible',
+              movie.hasTrailer ? 'Reproducir tráiler' : 'Tráiler no disponible',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
@@ -635,7 +637,7 @@ class _PrimaryActions extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _DetailActionButton(
-                    icon: Icons.save,
+                    icon: isSaved ? Icons.save : Icons.save_outlined,
                     label: isSaved ? 'Guardada' : 'Guardar',
                     isActive: isSaved,
                     onTap: () => handleSavedTap(context, movie),
@@ -677,9 +679,7 @@ class _DetailActionButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isActive
-                  ? AppColors.yellow
-                  : AppColors.white54,
+              color: isActive ? AppColors.yellow : AppColors.white54,
               width: 1.1,
             ),
           ),
@@ -693,9 +693,7 @@ class _DetailActionButton extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 20,
-                  color: isActive
-                      ? AppColors.yellow
-                      : AppColors.white,
+                  color: isActive ? AppColors.yellow : AppColors.white,
                 ),
               ),
               const SizedBox(width: 8),
@@ -705,9 +703,7 @@ class _DetailActionButton extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: isActive
-                        ? AppColors.yellow
-                        : AppColors.white,
+                    color: isActive ? AppColors.yellow : AppColors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                   ),
@@ -746,26 +742,135 @@ class _OverviewSection extends StatelessWidget {
   }
 }
 
-class _TrailerSection extends StatelessWidget {
+class _TrailerCenterDialog extends StatelessWidget {
+  final String title;
   final String videoId;
 
-  const _TrailerSection({required this.videoId});
+  const _TrailerCenterDialog({
+    required this.title,
+    required this.videoId,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return _SectionCard(
-      title: 'Tráiler',
-      icon: Icons.play_circle_outline_rounded,
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
-      child: videoId.isEmpty
-          ? const _EmptySection(
-              icon: Icons.videocam_off_outlined,
-              text: 'No hay un tráiler disponible para este título.',
-            )
-          : ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _YoutubeTrailer(videoId: videoId),
+    final screenSize = MediaQuery.sizeOf(context);
+    final maxWidth = screenSize.width > 720 ? 720.0 : screenSize.width - 36;
+
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                decoration: BoxDecoration(
+                  color: AppColors.homeGradientBottom,
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(
+                    color: AppColors.yellow.withValues(alpha: .28),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: .55),
+                      blurRadius: 36,
+                      offset: const Offset(0, 18),
+                    ),
+                    BoxShadow(
+                      color: AppColors.yellow.withValues(alpha: .08),
+                      blurRadius: 32,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppColors.yellow.withValues(alpha: .13),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow_rounded,
+                            color: AppColors.yellow,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.white,
+                              fontSize: 16,
+                              height: 1.15,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Material(
+                          color: Colors.black.withValues(alpha: .35),
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () => Navigator.of(context).pop(),
+                            child: const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.close_rounded,
+                                color: AppColors.white,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: _YoutubeTrailer(videoId: videoId),
+                    ),
+                    const SizedBox(height: 12),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.public_rounded,
+                          color: AppColors.white54,
+                          size: 15,
+                        ),
+                        SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Tráiler oficial disponible desde TMDB / YouTube',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: AppColors.white54,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -792,9 +897,7 @@ class _YoutubeTrailerState extends State<_YoutubeTrailer> {
   void didUpdateWidget(covariant _YoutubeTrailer oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.videoId == widget.videoId) {
-      return;
-    }
+    if (oldWidget.videoId == widget.videoId) return;
 
     _controller.close();
     _controller = _buildController(widget.videoId);
@@ -881,58 +984,866 @@ class _CastCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 112,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            Navigator.of(context).push(
+              _buildActorDetailRoute(member),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Column(
+              children: [
+                Hero(
+                  tag: 'actor-${member.id}',
+                  child: Container(
+                    width: 104,
+                    height: 132,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: AppColors.imagePlaceholder,
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: AppColors.dividerBlue.withValues(alpha: .48),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: .22),
+                          blurRadius: 14,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: member.profilePath.isEmpty
+                        ? const Icon(
+                            Icons.person_outline_rounded,
+                            color: AppColors.white54,
+                            size: 42,
+                          )
+                        : Image.network(
+                            'https://image.tmdb.org/t/p/w185${member.profilePath}',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person_outline_rounded,
+                              color: AppColors.white54,
+                              size: 42,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  member.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  member.character.isEmpty ? 'Reparto' : member.character,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.white54,
+                    fontSize: 10,
+                    height: 1.15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Route<void> _buildActorDetailRoute(CastMember member) {
+  return PageRouteBuilder<void>(
+    transitionDuration: const Duration(milliseconds: 360),
+    reverseTransitionDuration: const Duration(milliseconds: 260),
+    pageBuilder: (context, animation, secondaryAnimation) {
+      return _ActorDetailScreen(member: member);
+    },
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return ColoredBox(
+        color: AppColors.homeGradientBottom,
+        child: FadeTransition(
+          opacity: Tween<double>(begin: 0.88, end: 1).animate(curved),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.05, 0.02),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _ActorDetailScreen extends StatefulWidget {
+  final CastMember member;
+
+  const _ActorDetailScreen({
+    required this.member,
+  });
+
+  @override
+  State<_ActorDetailScreen> createState() => _ActorDetailScreenState();
+}
+
+class _ActorDetailScreenState extends State<_ActorDetailScreen> {
+  late final Future<ActorDetail> _actorFuture;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _actorFuture = MoviesRemoteDatasource().getActorDetail(widget.member.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.homeGradientBottom,
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: AppColors.homeGradient,
+        ),
+        child: FutureBuilder<ActorDetail>(
+          future: _actorFuture,
+          builder: (context, snapshot) {
+            final fallback = widget.member;
+
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _ActorLoadingView(member: fallback);
+            }
+
+            if (snapshot.hasError || snapshot.data == null) {
+              return _ActorErrorView(
+                member: fallback,
+                onBack: () => Navigator.of(context).pop(),
+              );
+            }
+
+            final actor = snapshot.data!;
+
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  automaticallyImplyLeading: false,
+                  expandedHeight: 430,
+                  backgroundColor: AppColors.homeGradientTop,
+                  surfaceTintColor: Colors.transparent,
+                  leadingWidth: 70,
+                  leading: Padding(
+                    padding: const EdgeInsets.only(left: 14),
+                    child: _CircleIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.parallax,
+                    background: _ActorHero(
+                      actor: actor,
+                      member: fallback,
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 22, 18, 0),
+                    child: _ActorQuickInfo(actor: actor),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+                    child: _ActorBiography(actor: actor),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+                    child: _ActorDataCard(actor: actor),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 24, 0, 34),
+                    child: _ActorCreditsSection(
+                      credits: actor.knownCredits,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ActorHero extends StatelessWidget {
+  final ActorDetail actor;
+  final CastMember member;
+
+  const _ActorHero({
+    required this.actor,
+    required this.member,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final imagePath =
+        actor.profilePath.isNotEmpty ? actor.profilePath : member.profilePath;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (imagePath.isNotEmpty)
+          Image.network(
+            'https://image.tmdb.org/t/p/w500$imagePath',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) {
+              return const ColoredBox(color: AppColors.imagePlaceholder);
+            },
+          )
+        else
+          const ColoredBox(color: AppColors.imagePlaceholder),
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: [0, .42, 1],
+              colors: [
+                Color(0x33000000),
+                Color(0xCC061D2C),
+                AppColors.homeGradientBottom,
+              ],
+            ),
+          ),
+        ),
+        SafeArea(
+          bottom: false,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 90, 18, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Hero(
+                    tag: 'actor-${member.id}',
+                    child: Container(
+                      width: 154,
+                      height: 204,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        color: AppColors.imagePlaceholder,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: AppColors.yellow.withValues(alpha: .65),
+                          width: 1.4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: .45),
+                            blurRadius: 30,
+                            offset: const Offset(0, 16),
+                          ),
+                        ],
+                      ),
+                      child: imagePath.isEmpty
+                          ? const Icon(
+                              Icons.person_outline_rounded,
+                              color: AppColors.white54,
+                              size: 70,
+                            )
+                          : Image.network(
+                              'https://image.tmdb.org/t/p/w500$imagePath',
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) {
+                                return const Icon(
+                                  Icons.person_outline_rounded,
+                                  color: AppColors.white54,
+                                  size: 70,
+                                );
+                              },
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    actor.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 27,
+                      height: 1.08,
+                      fontWeight: FontWeight.w900,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    member.character.isEmpty
+                        ? actor.departmentLabel
+                        : 'Interpreta a ${member.character}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.yellow,
+                      fontSize: 14,
+                      height: 1.3,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActorQuickInfo extends StatelessWidget {
+  final ActorDetail actor;
+
+  const _ActorQuickInfo({required this.actor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _ActorMetricCard(
+            icon: Icons.work_outline_rounded,
+            label: 'Área',
+            value: actor.departmentLabel,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _ActorMetricCard(
+            icon: Icons.trending_up_rounded,
+            label: 'Popularidad',
+            value: actor.popularity.toStringAsFixed(1),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActorMetricCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _ActorMetricCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 82,
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: .22),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.dividerBlue.withValues(alpha: .42),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: AppColors.yellow,
+            size: 25,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.white54,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActorBiography extends StatelessWidget {
+  final ActorDetail actor;
+
+  const _ActorBiography({required this.actor});
+
+  @override
+  Widget build(BuildContext context) {
+    final biography = actor.biography.trim();
+
+    return _SectionCard(
+      title: 'Biografía',
+      icon: Icons.menu_book_outlined,
+      child: Text(
+        biography.isEmpty
+            ? 'TMDB no tiene una biografía disponible para este actor.'
+            : biography,
+        style: const TextStyle(
+          color: AppColors.white70,
+          fontSize: 13,
+          height: 1.55,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+class _ActorDataCard extends StatelessWidget {
+  final ActorDetail actor;
+
+  const _ActorDataCard({required this.actor});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionCard(
+      title: 'Datos del actor',
+      icon: Icons.info_outline_rounded,
       child: Column(
         children: [
+          _ActorInfoRow(
+            icon: Icons.cake_outlined,
+            label: 'Nacimiento',
+            value: _formatActorDate(actor.birthday),
+          ),
+          _ActorInfoRow(
+            icon: Icons.location_on_outlined,
+            label: 'Lugar de nacimiento',
+            value: actor.placeOfBirth.isEmpty
+                ? 'No especificado'
+                : actor.placeOfBirth,
+          ),
+          _ActorInfoRow(
+            icon: Icons.person_outline_rounded,
+            label: 'Género',
+            value: actor.genderLabel,
+          ),
+          if (actor.deathday.isNotEmpty)
+            _ActorInfoRow(
+              icon: Icons.event_busy_outlined,
+              label: 'Fallecimiento',
+              value: _formatActorDate(actor.deathday),
+            ),
+          if (actor.imdbId.isNotEmpty)
+            _ActorInfoRow(
+              icon: Icons.movie_creation_outlined,
+              label: 'IMDb ID',
+              value: actor.imdbId,
+            ),
+          if (actor.instagramId.isNotEmpty)
+            _ActorInfoRow(
+              icon: Icons.camera_alt_outlined,
+              label: 'Instagram',
+              value: '@${actor.instagramId}',
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActorInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _ActorInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 13),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppColors.yellow, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.white54,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 14,
+                    height: 1.35,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActorCreditsSection extends StatelessWidget {
+  final List<ActorCredit> credits;
+
+  const _ActorCreditsSection({
+    required this.credits,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (credits.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.only(right: 18),
+        child: _EmptySection(
+          icon: Icons.movie_filter_outlined,
+          text: 'No hay créditos conocidos disponibles.',
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(right: 18),
+          child: _SectionHeading(
+            title: 'Participaciones conocidas',
+            icon: Icons.movie_filter_outlined,
+          ),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 226,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(right: 18),
+            itemCount: credits.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              return _ActorCreditCard(credit: credits[index]);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActorCreditCard extends StatelessWidget {
+  final ActorCredit credit;
+
+  const _ActorCreditCard({
+    required this.credit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 116,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Container(
-            width: 104,
-            height: 132,
+            width: 116,
+            height: 164,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: AppColors.imagePlaceholder,
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
-                color: AppColors.dividerBlue.withValues(alpha: .48),
+                color: AppColors.dividerBlue.withValues(alpha: .42),
               ),
             ),
-            child: member.profilePath.isEmpty
+            child: credit.posterPath.isEmpty
                 ? const Icon(
-                    Icons.person_outline_rounded,
+                    Icons.movie_outlined,
                     color: AppColors.white54,
-                    size: 42,
+                    size: 38,
                   )
                 : Image.network(
-                    'https://image.tmdb.org/t/p/w185${member.profilePath}',
+                    'https://image.tmdb.org/t/p/w342${credit.posterPath}',
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.person_outline_rounded,
-                      color: AppColors.white54,
-                      size: 42,
-                    ),
+                    errorBuilder: (_, __, ___) {
+                      return const Icon(
+                        Icons.movie_outlined,
+                        color: AppColors.white54,
+                        size: 38,
+                      );
+                    },
                   ),
           ),
           const SizedBox(height: 8),
           Text(
-            member.name,
+            credit.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.white,
               fontSize: 12,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 4),
           Text(
-            member.character.isEmpty ? 'Reparto' : member.character,
-            maxLines: 2,
+            '${credit.mediaTypeLabel} · ${credit.year}',
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
             style: const TextStyle(
-              color: AppColors.white54,
+              color: AppColors.yellow,
               fontSize: 10,
-              height: 1.15,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (credit.character.isNotEmpty) ...[
+            const SizedBox(height: 3),
+            Text(
+              credit.character,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.white54,
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ActorLoadingView extends StatelessWidget {
+  final CastMember member;
+
+  const _ActorLoadingView({
+    required this.member,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: AppColors.homeGradient,
+          ),
+          child: SizedBox.expand(),
+        ),
+        SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                top: 12,
+                left: 14,
+                child: SizedBox(
+                  width: 46,
+                  height: 46,
+                  child: _CircleIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Hero(
+                      tag: 'actor-${member.id}',
+                      child: CircleAvatar(
+                        radius: 58,
+                        backgroundColor: AppColors.imagePlaceholder,
+                        backgroundImage: member.profilePath.isEmpty
+                            ? null
+                            : NetworkImage(
+                                'https://image.tmdb.org/t/p/w185${member.profilePath}',
+                              ),
+                        child: member.profilePath.isEmpty
+                            ? const Icon(
+                                Icons.person_outline_rounded,
+                                color: AppColors.white54,
+                                size: 48,
+                              )
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    const CircularProgressIndicator(color: AppColors.yellow),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Cargando información del actor...',
+                      style: TextStyle(
+                        color: AppColors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActorErrorView extends StatelessWidget {
+  final CastMember member;
+  final VoidCallback onBack;
+
+  const _ActorErrorView({
+    required this.member,
+    required this.onBack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Stack(
+        children: [
+          Positioned(
+            top: 12,
+            left: 14,
+            child: SizedBox(
+              width: 46,
+              height: 46,
+              child: _CircleIconButton(
+                icon: Icons.arrow_back_rounded,
+                onTap: onBack,
+              ),
+            ),
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Hero(
+                    tag: 'actor-${member.id}',
+                    child: CircleAvatar(
+                      radius: 58,
+                      backgroundColor: AppColors.imagePlaceholder,
+                      backgroundImage: member.profilePath.isEmpty
+                          ? null
+                          : NetworkImage(
+                              'https://image.tmdb.org/t/p/w185${member.profilePath}',
+                            ),
+                      child: member.profilePath.isEmpty
+                          ? const Icon(
+                              Icons.person_outline_rounded,
+                              color: AppColors.white54,
+                              size: 48,
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    member.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    member.character.isEmpty
+                        ? 'No se pudo cargar información adicional.'
+                        : 'Interpreta a ${member.character}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.white70,
+                      fontSize: 13,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -1011,8 +1922,7 @@ class _LocalOpinionsSection extends StatelessWidget {
               children: [
                 for (var index = 0; index < opinions.length; index++) ...[
                   _LocalOpinionCard(item: opinions[index]),
-                  if (index < opinions.length - 1)
-                    const SizedBox(height: 12),
+                  if (index < opinions.length - 1) const SizedBox(height: 12),
                 ],
               ],
             );
@@ -1080,12 +1990,8 @@ class _OpinionComposer extends StatelessWidget {
                   curve: Curves.easeOutBack,
                   scale: selected ? 1.12 : 1,
                   child: Icon(
-                    selected
-                        ? Icons.star_rounded
-                        : Icons.star_border_rounded,
-                    color: selected
-                        ? AppColors.yellow
-                        : AppColors.white54,
+                    selected ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: selected ? AppColors.yellow : AppColors.white54,
                     size: 28,
                   ),
                 ),
@@ -1116,9 +2022,7 @@ class _OpinionComposer extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.turquoise,
-                ),
+                borderSide: const BorderSide(color: AppColors.turquoise),
               ),
             ),
           ),
@@ -1264,11 +2168,7 @@ class _TmdbReviewsSection extends StatelessWidget {
         else
           Column(
             children: [
-              for (
-                var index = 0;
-                index < visibleReviews.length;
-                index++
-              ) ...[
+              for (var index = 0; index < visibleReviews.length; index++) ...[
                 _TmdbReviewCard(review: visibleReviews[index]),
                 if (index < visibleReviews.length - 1)
                   const SizedBox(height: 12),
@@ -1333,8 +2233,7 @@ class _TmdbReviewCardState extends State<_TmdbReviewCard> {
                   ),
                 ),
               ),
-              if (rating != null)
-                _SmallRating(rating: rating / 2),
+              if (rating != null) _SmallRating(rating: rating / 2),
             ],
           ),
           const SizedBox(height: 10),
@@ -1457,11 +2356,7 @@ class _SectionHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: AppColors.yellow,
-          size: 22,
-        ),
+        Icon(icon, color: AppColors.yellow, size: 22),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -1491,21 +2386,14 @@ class _EmptySection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 22,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: .18),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: AppColors.white54,
-            size: 34,
-          ),
+          Icon(icon, color: AppColors.white54, size: 34),
           const SizedBox(height: 10),
           Text(
             text,
@@ -1598,9 +2486,7 @@ class _LoadingView extends StatelessWidget {
                 ),
               ),
               const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.yellow,
-                ),
+                child: CircularProgressIndicator(color: AppColors.yellow),
               ),
             ],
           ),
@@ -1661,7 +2547,9 @@ class _ErrorView extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Revisa tu conexión e inténtalo nuevamente.',
+                    message?.isNotEmpty == true
+                        ? message!
+                        : 'Revisa tu conexión e inténtalo nuevamente.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: AppColors.white70,
@@ -1690,18 +2578,24 @@ class _ErrorView extends StatelessWidget {
 }
 
 String _formatRuntime(int minutes) {
-  if (minutes < 60) {
-    return '$minutes min';
-  }
+  if (minutes < 60) return '$minutes min';
 
   final hours = minutes ~/ 60;
   final remainingMinutes = minutes % 60;
 
-  if (remainingMinutes == 0) {
-    return '$hours h';
-  }
+  if (remainingMinutes == 0) return '$hours h';
 
   return '$hours h $remainingMinutes min';
+}
+
+String _formatActorDate(String value) {
+  if (value.trim().isEmpty) return 'No especificado';
+
+  final date = DateTime.tryParse(value);
+
+  if (date == null) return value;
+
+  return _formatDate(date);
 }
 
 String _formatDate(DateTime date) {

@@ -53,7 +53,6 @@ class HomeFooter extends StatelessWidget {
               ),
               _FooterItem(
                 icon: Icons.save,
-                boxedIcon: true,
                 selected: currentIndex == 2,
                 onTap: () => _goToPage(context, 2),
               ),

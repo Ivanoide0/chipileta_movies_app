@@ -7,6 +7,7 @@ import '../data/models/movie_model.dart';
 import '../data/models/review_model.dart';
 import '../entities/movie.dart';
 import '../entities/review.dart';
+import '../entities/actor_detail.dart';
 import 'movies_datasources.dart';
 
 class MoviesRemoteDatasource implements MoviesDatasource {
@@ -244,6 +245,32 @@ class MoviesRemoteDatasource implements MoviesDatasource {
       tmdbReviews: reviews,
     );
   }
+
+  Future<ActorDetail> getActorDetail(int personId) async {
+  final url = Uri.parse(
+    '$_baseUrl/person/$personId',
+  ).replace(
+    queryParameters: const {
+      'language': 'es-MX',
+      'append_to_response': 'combined_credits,external_ids',
+    },
+  );
+
+  final response = await http.get(
+    url,
+    headers: _headers,
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception(
+      'Error al cargar información del actor (${response.statusCode})',
+    );
+  }
+
+  final decoded = json.decode(response.body) as Map<String, dynamic>;
+
+  return ActorDetail.fromJson(decoded);
+}
 
   Future<Map<String, dynamic>> _getDetailPayload({
     required String mediaType,
