@@ -931,10 +931,93 @@ class _YoutubeTrailerState extends State<_YoutubeTrailer> {
   }
 }
 
-class _CastSection extends StatelessWidget {
+class _CastSection extends StatefulWidget {
   final List<CastMember> cast;
 
-  const _CastSection({required this.cast});
+  const _CastSection({
+    required this.cast,
+  });
+
+  @override
+  State<_CastSection> createState() => _CastSectionState();
+}
+
+class _CastSectionState extends State<_CastSection> {
+  final ScrollController _scrollController = ScrollController();
+
+  bool _showLeftFade = false;
+  bool _showRightFade = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _scrollController.addListener(_updateFadeVisibility);
+
+    /*
+     * Esperamos a que el carrusel se dibuje para comprobar
+     * si existe contenido adicional hacia la derecha.
+     */
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateFadeVisibility();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _CastSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    /*
+     * Si cambia la cantidad de actores, volvemos a calcular
+     * los degradados laterales.
+     */
+    if (oldWidget.cast.length != widget.cast.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateFadeVisibility();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_updateFadeVisibility)
+      ..dispose();
+
+    super.dispose();
+  }
+
+  void _updateFadeVisibility() {
+    if (!_scrollController.hasClients || !mounted) {
+      return;
+    }
+
+    final position = _scrollController.position;
+
+    /*
+     * El degradado izquierdo aparece después de comenzar
+     * a desplazar el carrusel.
+     */
+    final shouldShowLeft = position.pixels > 4;
+
+    /*
+     * El degradado derecho aparece mientras todavía exista
+     * contenido por visualizar.
+     */
+    final shouldShowRight =
+        position.maxScrollExtent > 0 &&
+        position.pixels < position.maxScrollExtent - 4;
+
+    if (_showLeftFade == shouldShowLeft &&
+        _showRightFade == shouldShowRight) {
+      return;
+    }
+
+    setState(() {
+      _showLeftFade = shouldShowLeft;
+      _showRightFade = shouldShowRight;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -949,7 +1032,8 @@ class _CastSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        if (cast.isEmpty)
+
+        if (widget.cast.isEmpty)
           const Padding(
             padding: EdgeInsets.only(right: 18),
             child: _EmptySection(
@@ -960,14 +1044,57 @@ class _CastSection extends StatelessWidget {
         else
           SizedBox(
             height: 188,
-            child: ListView.separated(
-              physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              itemCount: cast.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                return _CastCard(member: cast[index]);
+            child: ShaderMask(
+              shaderCallback: (bounds) {
+                return LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  stops: const [
+                    0,
+                    0.08,
+                    0.92,
+                    1,
+                  ],
+                  colors: [
+                    /*
+                     * Al comenzar, el lado izquierdo no se desvanece.
+                     * Después de desplazarse, sí aparece el degradado.
+                     */
+                    _showLeftFade
+                        ? Colors.transparent
+                        : Colors.white,
+
+                    Colors.white,
+                    Colors.white,
+
+                    /*
+                     * Mientras existan actores a la derecha,
+                     * se mantiene visible el desvanecido.
+                     */
+                    _showRightFade
+                        ? Colors.transparent
+                        : Colors.white,
+                  ],
+                ).createShader(bounds);
               },
+              blendMode: BlendMode.dstIn,
+              child: ListView.separated(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.only(
+                  right: 18,
+                ),
+                itemCount: widget.cast.length,
+                separatorBuilder: (_, __) {
+                  return const SizedBox(width: 12);
+                },
+                itemBuilder: (context, index) {
+                  return _CastCard(
+                    member: widget.cast[index],
+                  );
+                },
+              ),
             ),
           ),
       ],
@@ -978,7 +1105,9 @@ class _CastSection extends StatelessWidget {
 class _CastCard extends StatelessWidget {
   final CastMember member;
 
-  const _CastCard({required this.member});
+  const _CastCard({
+    required this.member,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1007,7 +1136,9 @@ class _CastCard extends StatelessWidget {
                       color: AppColors.imagePlaceholder,
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(
-                        color: AppColors.dividerBlue.withValues(alpha: .48),
+                        color: AppColors.dividerBlue.withValues(
+                          alpha: .48,
+                        ),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -1024,13 +1155,16 @@ class _CastCard extends StatelessWidget {
                             size: 42,
                           )
                         : Image.network(
-                            'https://image.tmdb.org/t/p/w185${member.profilePath}',
+                            'https://image.tmdb.org/t/p/w185'
+                            '${member.profilePath}',
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
-                              Icons.person_outline_rounded,
-                              color: AppColors.white54,
-                              size: 42,
-                            ),
+                            errorBuilder: (_, __, ___) {
+                              return const Icon(
+                                Icons.person_outline_rounded,
+                                color: AppColors.white54,
+                                size: 42,
+                              );
+                            },
                           ),
                   ),
                 ),
@@ -1048,7 +1182,9 @@ class _CastCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  member.character.isEmpty ? 'Reparto' : member.character,
+                  member.character.isEmpty
+                      ? 'Reparto'
+                      : member.character,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
@@ -1560,7 +1696,7 @@ class _ActorInfoRow extends StatelessWidget {
   }
 }
 
-class _ActorCreditsSection extends StatelessWidget {
+class _ActorCreditsSection extends StatefulWidget {
   final List<ActorCredit> credits;
 
   const _ActorCreditsSection({
@@ -1568,8 +1704,22 @@ class _ActorCreditsSection extends StatelessWidget {
   });
 
   @override
+  State<_ActorCreditsSection> createState() =>
+      _ActorCreditsSectionState();
+}
+
+class _ActorCreditsSectionState extends State<_ActorCreditsSection> {
+  bool _showAll = false;
+
+  void _toggleCredits() {
+    setState(() {
+      _showAll = !_showAll;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (credits.isEmpty) {
+    if (widget.credits.isEmpty) {
       return const Padding(
         padding: EdgeInsets.only(right: 18),
         child: _EmptySection(
@@ -1579,31 +1729,153 @@ class _ActorCreditsSection extends StatelessWidget {
       );
     }
 
-    return Column(
+    final hasMoreCredits = widget.credits.length > 3;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Encabezado de la sección.
+          Row(
+            children: [
+              const Expanded(
+                child: _SectionHeading(
+                  title: 'Participaciones conocidas',
+                  icon: Icons.movie_filter_outlined,
+                ),
+              ),
+
+              // Solo aparece si existen más de tres participaciones.
+              if (hasMoreCredits)
+                TextButton(
+                  onPressed: _toggleCredits,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.yellow,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    minimumSize: const Size(0, 36),
+                    tapTargetSize:
+                        MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: const Duration(
+                          milliseconds: 180,
+                        ),
+                        child: Text(
+                          _showAll ? 'Ver menos' : 'Ver más',
+                          key: ValueKey<bool>(_showAll),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      AnimatedRotation(
+                        turns: _showAll ? 0.5 : 0,
+                        duration: const Duration(
+                          milliseconds: 220,
+                        ),
+                        curve: Curves.easeOutCubic,
+                        child: const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // Animación al abrir y cerrar la cuadrícula.
+          AnimatedSize(
+            duration: const Duration(milliseconds: 340),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: _showAll
+                ? _ExpandedActorCredits(
+                    credits: widget.credits,
+                  )
+                : _CollapsedActorCredits(
+                    credits: widget.credits
+                        .take(3)
+                        .toList(growable: false),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+class _CollapsedActorCredits extends StatelessWidget {
+  final List<ActorCredit> credits;
+
+  const _CollapsedActorCredits({
+    required this.credits,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(right: 18),
-          child: _SectionHeading(
-            title: 'Participaciones conocidas',
-            icon: Icons.movie_filter_outlined,
+        for (var index = 0; index < credits.length; index++) ...[
+          Expanded(
+            child: _ActorCreditCard(
+              credit: credits[index],
+            ),
           ),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 226,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(right: 18),
-            itemCount: credits.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              return _ActorCreditCard(credit: credits[index]);
-            },
-          ),
-        ),
+          if (index < credits.length - 1)
+            const SizedBox(width: 12),
+        ],
       ],
+    );
+  }
+}
+
+class _ExpandedActorCredits extends StatelessWidget {
+  final List<ActorCredit> credits;
+
+  const _ExpandedActorCredits({
+    required this.credits,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      // La pantalla principal ya tiene desplazamiento vertical.
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: credits.length,
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 20,
+
+        // Altura completa de cada tarjeta.
+        mainAxisExtent: 230,
+      ),
+      itemBuilder: (context, index) {
+        return _ActorCreditCard(
+          credit: credits[index],
+        );
+      },
     );
   }
 }
@@ -1617,21 +1889,30 @@ class _ActorCreditCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 116,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 116,
-            height: 164,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // La imagen se adapta automáticamente al ancho de la columna.
+        AspectRatio(
+          aspectRatio: 2 / 3,
+          child: Container(
+            width: double.infinity,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: AppColors.imagePlaceholder,
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
-                color: AppColors.dividerBlue.withValues(alpha: .42),
+                color: AppColors.dividerBlue.withValues(
+                  alpha: .42,
+                ),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .20),
+                  blurRadius: 12,
+                  offset: const Offset(0, 7),
+                ),
+              ],
             ),
             child: credit.posterPath.isEmpty
                 ? const Icon(
@@ -1640,7 +1921,8 @@ class _ActorCreditCard extends StatelessWidget {
                     size: 38,
                   )
                 : Image.network(
-                    'https://image.tmdb.org/t/p/w342${credit.posterPath}',
+                    'https://image.tmdb.org/t/p/w342'
+                    '${credit.posterPath}',
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) {
                       return const Icon(
@@ -1651,43 +1933,48 @@ class _ActorCreditCard extends StatelessWidget {
                     },
                   ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            credit.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-            ),
+        ),
+
+        const SizedBox(height: 8),
+
+        Text(
+          credit.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
           ),
-          const SizedBox(height: 4),
+        ),
+
+        const SizedBox(height: 4),
+
+        Text(
+          '${credit.mediaTypeLabel} · ${credit.year}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.yellow,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+
+        if (credit.character.isNotEmpty) ...[
+          const SizedBox(height: 3),
           Text(
-            '${credit.mediaTypeLabel} · ${credit.year}',
+            credit.character,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: AppColors.yellow,
+              color: AppColors.white54,
               fontSize: 10,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          if (credit.character.isNotEmpty) ...[
-            const SizedBox(height: 3),
-            Text(
-              credit.character,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.white54,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
         ],
-      ),
+      ],
     );
   }
 }
