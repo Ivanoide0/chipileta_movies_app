@@ -8,6 +8,7 @@ import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.da
 import 'package:chipileta_movies_app/domain/usercases/update_password_usecase.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/config_screen.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:chipileta_movies_app/services/notification_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   static const name = 'change-password-screen';
@@ -80,6 +81,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _currentPasswordController.clear();
       _newPasswordController.clear();
       _showMessage('Contraseña actualizada.');
+      await NotificationService.instance.show(
+        title: 'Chipileta Movies',
+        body: 'Contraseña actualizada correctamente.',
+      );
     } catch (e) {
       _showMessage(e.toString().replaceFirst('Exception: ', ''));
     } finally {

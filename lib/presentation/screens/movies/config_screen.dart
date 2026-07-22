@@ -13,6 +13,7 @@ import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.da
 import 'package:chipileta_movies_app/domain/usercases/update_profile_photo_usecase.dart';
 import 'package:chipileta_movies_app/domain/usercases/update_username_usecase.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:chipileta_movies_app/services/notification_service.dart';
 
 class ConfigScreen extends StatefulWidget {
   static const name = 'config-screen';
@@ -93,6 +94,10 @@ class _ConfigScreenState extends State<ConfigScreen> {
       SessionService.instance.setUser(updated);
       setState(() => _photoPath = updated.photoPath);
       _showMessage('Foto actualizada.');
+      await NotificationService.instance.show(
+        title: 'Chipileta Movies',
+        body: 'Foto actualizada correctamente.',
+      );
     } catch (e) {
       _showMessage('No se pudo guardar la foto.');
     } finally {
@@ -125,6 +130,10 @@ class _ConfigScreenState extends State<ConfigScreen> {
       );
       SessionService.instance.setUser(updated);
       _showMessage('Nombre actualizado.');
+      await NotificationService.instance.show(
+        title: 'Chipileta Movies',
+        body: 'Datos guardados correctamente.',
+      );
     } catch (e) {
       _showMessage('Error: $e');
     } finally {
