@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'dart:io';
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/home_footer.dart';
@@ -18,6 +18,8 @@ class ProfileScreen extends StatelessWidget {
     final name = user?.name ?? 'Papito chulo';
     final email = user?.email ?? 'Papito@chulo.com';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'R';
+    final photoPath = user?.photoPath;
+    final hasPhoto = photoPath != null && File(photoPath).existsSync();
 
     return Scaffold(
       backgroundColor: AppColors.homeGradientBottom,
@@ -54,12 +56,49 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.more_vert,
-                        color: AppColors.white,
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, color: AppColors.white),
+                      color: AppColors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      onSelected: (value) {
+                        if (value == 'config') {
+                          context.go('/config');
+                        } else if (value == 'password') {
+                          context.go('/change-password');
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem<String>(
+                          value: 'config',
+                          child: Row(
+                            children: [
+                              Icon(Icons.settings_outlined,
+                                  color: AppColors.gradientTop, size: 20),
+                              SizedBox(width: 10),
+                              Text('Configuración general',
+                                  style: TextStyle(
+                                      color: AppColors.heroText,
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<String>(
+                          value: 'password',
+                          child: Row(
+                            children: [
+                              Icon(Icons.lock_outline_rounded,
+                                  color: AppColors.gradientTop, size: 20),
+                              SizedBox(width: 10),
+                              Text('Cambiar contraseña',
+                                  style: TextStyle(
+                                      color: AppColors.heroText,
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -81,14 +120,18 @@ class ProfileScreen extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 39,
                           backgroundColor: AppColors.yellow,
-                          child: Text(
-                            initial,
-                            style: const TextStyle(
-                              color: AppColors.gradientTop,
-                              fontSize: 46,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
+                          backgroundImage:
+                              hasPhoto ? FileImage(File(photoPath)) : null,
+                          child: hasPhoto
+                              ? null
+                              : Text(
+                                  initial,
+                                  style: const TextStyle(
+                                    color: AppColors.gradientTop,
+                                    fontSize: 46,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 78),
@@ -104,7 +147,8 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      _ProfileInput(
+                      _ProfileInfo(
+                        icon: Icons.person_outline_rounded,
                         text: name,
                       ),
                       const SizedBox(height: 16),
@@ -120,7 +164,8 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      _ProfileInput(
+                      _ProfileInfo(
+                        icon: Icons.email_outlined,
                         text: email,
                       ),
                       const SizedBox(height: 78),
@@ -157,39 +202,6 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 28),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final confirm = await showLogoutConfirmDialog(context);
-                            if (!confirm) return;
-
-                            // Aquí puedes limpiar sesión si lo necesitas:
-                            // await SessionService.instance.logout();
-
-                            if (context.mounted) {
-                              context.go('/ruta_inexistente');
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: AppColors.yellow,
-                            foregroundColor: AppColors.heroText,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28),
-                            ),
-                          ),
-                          child: const Text(
-                            'Romper todo',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 28),
                     ],
                   ),
                 ),
@@ -202,30 +214,30 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _ProfileInput extends StatelessWidget {
+class _ProfileInfo extends StatelessWidget {
+  final IconData icon;
   final String text;
 
-  const _ProfileInput({
+  const _ProfileInfo({
+    required this.icon,
     required this.text,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(13),
+        border: Border.all(
+          color: AppColors.white.withValues(alpha: 0.15),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.person_outline_rounded,
-            color: Colors.deepPurpleAccent,
-            size: 24,
-          ),
+          Icon(icon, color: AppColors.white70, size: 22),
           const SizedBox(width: 14),
           Expanded(
             child: Text(
@@ -233,8 +245,8 @@ class _ProfileInput extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color: AppColors.heroText,
-                fontSize: 14,
+                color: AppColors.white,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
             ),

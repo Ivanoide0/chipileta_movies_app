@@ -71,7 +71,8 @@ class OpinionsLocalDataSource {
         o.comment     AS comment,
         o.created_at  AS created_at,
         u.nombre      AS nombre,
-        u.apellido    AS apellido
+        u.apellido    AS apellido,
+        u.foto_perfil AS foto_perfil
       FROM opinions o
       INNER JOIN users u ON u.id = o.user_id
       ORDER BY o.created_at DESC
@@ -83,6 +84,7 @@ class OpinionsLocalDataSource {
         opinion: opinion,
         authorName: row['nombre'] as String,
         authorLastName: row['apellido'] as String,
+        authorPhotoPath: row['foto_perfil'] as String?,
       );
     }).toList();
   }

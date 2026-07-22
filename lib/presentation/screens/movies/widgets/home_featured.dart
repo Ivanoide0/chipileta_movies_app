@@ -186,7 +186,7 @@ class _FeaturedCard extends StatelessWidget {
                     'Películas\ndestacadas',
                     style: TextStyle(
                       color: AppColors.heroText,
-                      fontSize: 21,
+                      fontSize: 18,
                       height: 1.05,
                       fontWeight: FontWeight.w800,
                     ),
