@@ -172,6 +172,121 @@ class AuthLocalDataSource {
     );
   }
 
+  Future<UserModel> updateUsername({
+    required int userId,
+    required String newName,
+    required String newLastName,
+  }) async{
+    final db = await dbHelper.database;
+
+    final trimmedName = newName.trim();
+    final trimmedLastName = newLastName.trim();
+
+    if(trimmedName.isEmpty){
+      throw Exception('El nombre no puede estar vacío.');
+    }
+
+    final count = await db.update(
+      'users',
+      {'nombre': trimmedName, 'apellido':trimmedLastName},
+      where: 'id = ?',
+      whereArgs: [userId]
+    );
+
+    if(count == 0){
+      throw Exception('Usuario no encontrado.');
+    }
+
+    final result = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+    return UserModel.fromMap(result.first);
+  }
+
+  Future<UserModel> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final db = await dbHelper.database;
+
+    final result = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+
+    if (result.isEmpty) {
+      throw Exception('Usuario no encontrado.');
+    }
+
+    final user = UserModel.fromMap(result.first);
+
+    if (user.passwordHash == null) {
+      throw Exception(
+        'Esta cuenta usa inicio de sesión con Google y no tiene contraseña.',
+      );
+    }
+
+    final currentOk = BCrypt.checkpw(currentPassword, user.passwordHash!);
+    if (!currentOk) {
+      throw Exception('La contraseña actual es incorrecta.');
+    }
+
+    if (newPassword.length < 6) {
+      throw Exception('La nueva contraseña debe tener al menos 6 caracteres.');
+    }
+
+    final newHash = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+
+    await db.update(
+      'users',
+      {'password': newHash},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+
+    final updated = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+
+    return UserModel.fromMap(updated.first);
+  }
+
+  Future<UserModel> updatePhoto({
+    required int userId,
+    required String? photoPath,
+  }) async {
+    final db = await dbHelper.database;
+
+    final count = await db.update(
+      'users',
+      {'foto_perfil': photoPath},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+
+    if (count == 0) {
+      throw Exception('Usuario no encontrado.');
+    }
+
+    final result = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+
+    return UserModel.fromMap(result.first);
+  }
+
   (String, String) _splitDisplayName(String? displayName, String email){
     final full = (displayName ?? '').trim();
     if(full.isEmpty){

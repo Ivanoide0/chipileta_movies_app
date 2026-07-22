@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'dart:io';
 
 import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
 import 'package:chipileta_movies_app/domain/datasources/movies_remote_datasource.dart';
@@ -2369,17 +2370,28 @@ class _LocalOpinionCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: AppColors.yellow,
-            child: Text(
-              item.initials.isEmpty ? '?' : item.initials,
-              style: const TextStyle(
-                color: AppColors.heroText,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
+          Builder(
+            builder: (context) {
+              final photoPath = item.authorPhotoPath;
+              final hasPhoto =
+                  photoPath != null && File(photoPath).existsSync();
+              return CircleAvatar(
+                radius: 20,
+                backgroundColor: AppColors.yellow,
+                backgroundImage:
+                    hasPhoto ? FileImage(File(photoPath)) : null,
+                child: hasPhoto
+                    ? null
+                    : Text(
+                        item.initials,
+                        style: const TextStyle(
+                          color: AppColors.gradientTop,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+              );
+            },
           ),
           const SizedBox(width: 12),
           Expanded(

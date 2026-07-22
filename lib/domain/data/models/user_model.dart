@@ -14,6 +14,7 @@ class UserModel extends User {
     required super.isActive,
     required super.createdAt,
     required super.rolId,
+    super.photoPath,
     this.passwordHash,
     this.googleId
   });
@@ -29,7 +30,8 @@ class UserModel extends User {
     'rol_id': rolId,
     'is_active': isActive ? 1 : 0,
     'created_at': createdAt.toIso8601String(),
-    'google_id': googleId
+    'google_id': googleId,
+    'foto_perfil': photoPath
   };
 
   factory UserModel.fromMap(Map<String, dynamic> map) => UserModel(
@@ -43,7 +45,8 @@ class UserModel extends User {
     rolId: map['rol_id'] as int,
     isActive: (map['is_active'] as int == 1),
     createdAt: DateTime.parse(map['created_at'] as String),
-    googleId: map['google_id'] as String?
+    googleId: map['google_id'] as String?,
+    photoPath: map['foto_perfil'] as String?
   );
 
   User toEntity() => User(
@@ -56,5 +59,6 @@ class UserModel extends User {
     rolId: rolId,
     isActive: isActive,
     createdAt: createdAt,
+    photoPath: photoPath
   );
 }

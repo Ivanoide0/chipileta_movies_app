@@ -10,6 +10,8 @@ import 'package:chipileta_movies_app/presentation/screens/movies/favorites_scree
 import 'package:chipileta_movies_app/presentation/screens/movies/downloads_screen.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/profile_screen.dart';
 import 'package:chipileta_movies_app/presentation/screens/error/error_view.dart';
+import 'package:chipileta_movies_app/presentation/screens/movies/config_screen.dart';
+import 'package:chipileta_movies_app/presentation/screens/movies/change_password_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -70,6 +72,22 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => _tabPage(
         state: state,
         child: const ProfileScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/config',
+      name: ConfigScreen.name,
+      pageBuilder: (context, state) => _tabPage(
+        state: state,
+        child: const ConfigScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/change-password',
+      name: ChangePasswordScreen.name,
+      pageBuilder: (context, state) => _tabPage(
+        state: state,
+        child: const ChangePasswordScreen(),
       ),
     ),
   ],

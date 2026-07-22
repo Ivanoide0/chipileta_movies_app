@@ -18,7 +18,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       onConfigure: (db) async {
@@ -48,6 +48,7 @@ class DatabaseHelper {
         is_active INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL,
         google_id TEXT,
+        foto_perfil TEXT,
         FOREIGN KEY (rol_id) REFERENCES roles(id)
       )
     ''');
@@ -70,6 +71,9 @@ class DatabaseHelper {
     }
     if(oldVersion < 4){
       await _createNotificationsTable(db);
+    }
+    if(oldVersion < 5){
+      await db.execute('ALTER TABLE users ADD COLUMN foto_perfil TEXT');
     }
   }
 
