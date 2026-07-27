@@ -41,8 +41,6 @@ class NotificationsController extends ChangeNotifier {
   int get unreadCount => _items.where((n) => !n.isRead).length;
   bool get hasUnread => unreadCount > 0;
 
-  /// Mezcla las notificaciones locales (favoritos/guardados) con las de
-  /// Firestore (likes del usuario actual), ordenadas por fecha.
   Future<void> load() async {
     final local = await _getNotifications();
     final uid = _uid;
@@ -72,7 +70,6 @@ class NotificationsController extends ChangeNotifier {
     await load();
   }
 
-  // Quita de inmediato de la lista (UI fluida) y luego borra en el origen.
   Future<void> remove(AppNotification item) async {
     _items = _items.where((n) => !identical(n, item)).toList();
     notifyListeners();

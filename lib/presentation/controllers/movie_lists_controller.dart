@@ -5,12 +5,6 @@ import 'package:flutter/foundation.dart';
 
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
 
-/// Favoritos y guardados respaldados en Firestore (subcolecciones
-/// `users/{uid}/favorites` y `users/{uid}/saved`). Cada película es un
-/// documento con id = `storageKey` (`movie:123` / `tv:123`).
-///
-/// El estado local se actualiza al instante y la escritura a Firestore es
-/// "fire and forget": el SDK encola los cambios aunque no haya red.
 class MovieListsController extends ChangeNotifier {
   final FirebaseFirestore _firestore;
 
@@ -33,7 +27,6 @@ class MovieListsController extends ChangeNotifier {
   bool isSaved(Movie movie) =>
       _saved.any((item) => item.storageKey == movie.storageKey);
 
-  /// Carga las listas del usuario desde Firestore. Se llama tras iniciar sesión.
   Future<void> loadForUser(String uid) async {
     _uid = uid;
     _favorites.clear();
@@ -45,7 +38,6 @@ class MovieListsController extends ChangeNotifier {
       _col('saved').get(),
     ]);
 
-    // El usuario pudo cambiar (logout/login) mientras cargábamos.
     if (_uid != uid) return;
 
     _favorites.addAll(results[0].docs.map((d) => _movieFromMap(d.data())));
@@ -53,7 +45,6 @@ class MovieListsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Limpia el estado local. Se llama al cerrar sesión para no mezclar usuarios.
   void clear() {
     _uid = null;
     _favorites.clear();
