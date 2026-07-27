@@ -6,7 +6,6 @@ import 'package:printing/printing.dart';
 
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
 
-/// Paleta de la app reutilizada en el PDF (ver AppColors).
 const _navy = PdfColor.fromInt(0xFF19264F);
 const _teal = PdfColor.fromInt(0xFF08706D);
 const _tealMid = PdfColor.fromInt(0xFF075A68);
@@ -15,7 +14,6 @@ const _turquoise = PdfColor.fromInt(0xFF00CDB8);
 const _card = PdfColor.fromInt(0xFFEAF1F2);
 const _placeholder = PdfColor.fromInt(0xFF234B62);
 
-/// Estrella dibujada como SVG (Helvetica no trae el glifo ★).
 String _starSvg(String hex) =>
     '<svg viewBox="0 0 24 24"><path fill="$hex" '
     'd="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg>';
@@ -26,7 +24,7 @@ pw.Widget _star(double size, String hex) => pw.SizedBox(
       child: pw.SvgImage(svg: _starSvg(hex)),
     );
 
-/// Genera el PDF y abre la hoja para compartir.
+
 Future<void> shareFavoritesPdf(List<Movie> movies) async {
   await Printing.sharePdf(
     bytes: await _buildFavoritesPdf(movies),
@@ -34,7 +32,7 @@ Future<void> shareFavoritesPdf(List<Movie> movies) async {
   );
 }
 
-/// Genera el PDF y abre el diálogo del sistema para guardarlo/descargarlo.
+
 Future<void> downloadFavoritesPdf(List<Movie> movies) async {
   await Printing.layoutPdf(
     name: 'favoritos_chipileta.pdf',
@@ -43,7 +41,7 @@ Future<void> downloadFavoritesPdf(List<Movie> movies) async {
 }
 
 Future<Uint8List> _buildFavoritesPdf(List<Movie> movies) async {
-  // Descarga los pósters en paralelo; null si la película no tiene imagen o falla.
+
   final posters = await Future.wait(movies.map(_loadPoster));
 
   final doc = pw.Document();
@@ -72,7 +70,7 @@ Future<pw.ImageProvider?> _loadPoster(Movie movie) async {
   try {
     return await networkImage('https://image.tmdb.org/t/p/w342$path');
   } catch (_) {
-    return null; // ponytail: póster opcional, si falla seguimos sin él
+    return null;
   }
 }
 
