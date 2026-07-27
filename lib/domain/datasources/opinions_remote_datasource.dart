@@ -71,7 +71,6 @@ class OpinionsRemoteDataSource {
     final snapshot =
         await _opinions.orderBy('created_at', descending: true).get();
 
-    // Sin JOIN: los datos del autor ya vienen dentro de cada documento.
     return snapshot.docs.map((doc) {
       final model = OpinionModel.fromFirestore(doc.id, doc.data());
       return OpinionWithAuthor(
@@ -84,7 +83,6 @@ class OpinionsRemoteDataSource {
     }).toList();
   }
 
-  /// Da o quita like a una opinión. El campo `liked_by` guarda los uids.
   Future<void> setLike({
     required String opinionId,
     required String uid,

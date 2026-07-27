@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../entities/app_notification.dart';
 
-/// Notificaciones cross-device en Firestore: `users/{uid}/notifications`.
-/// Hoy solo se usa para los likes a reviews (el resto sigue siendo local).
 class NotificationsRemoteDataSource {
   final FirebaseFirestore _firestore;
 
@@ -13,7 +10,6 @@ class NotificationsRemoteDataSource {
   CollectionReference<Map<String, dynamic>> _col(String uid) =>
       _firestore.collection('users').doc(uid).collection('notifications');
 
-  /// Crea la notificación de like en el feed del autor del review.
   Future<void> addLike({
     required String recipientUid,
     required int movieId,

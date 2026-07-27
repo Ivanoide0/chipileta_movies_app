@@ -1,8 +1,8 @@
 enum NotificationType { favorite, saved, like }
 
 class AppNotification {
-  final int? id; // id local (SQLite) para favoritos/guardados.
-  final String? remoteId; // id de documento en Firestore para likes.
+  final int? id;
+  final String? remoteId;
   final int movieId;
   final String movieTitle;
   final String moviePoster;
@@ -21,7 +21,6 @@ class AppNotification {
     this.isRead = false,
   });
 
-  // Leyenda que se muestra en el panel segun el tipo.
   String get legend {
     switch (type) {
       case NotificationType.favorite:
