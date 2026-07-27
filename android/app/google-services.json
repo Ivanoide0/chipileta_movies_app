@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "876216140250-hq30q1mobl3lbf42l8d2fak6fj4ob94b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chipileta_movies_app",
+            "certificate_hash": "23df497c8ceb669ec3e7ce2b8707de484981e3e7"
+          }
+        },
+        {
           "client_id": "876216140250-c98b7op4g7itgt4fo6e055vn1e786j7g.apps.googleusercontent.com",
           "client_type": 3
         }

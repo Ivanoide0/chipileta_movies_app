@@ -1,4 +1,5 @@
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
+import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -100,6 +101,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (!mounted) return;
 
       SessionService.instance.setUser(user);
+      movieListsController.loadForUser(user.id!);
       context.go('/home');
 
       ScaffoldMessenger.of(context).showSnackBar(

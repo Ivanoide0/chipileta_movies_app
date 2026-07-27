@@ -1,4 +1,5 @@
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
+import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'package:chipileta_movies_app/presentation/widgets/google_sign_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -70,6 +71,7 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       SessionService.instance.setUser(user);
+      movieListsController.loadForUser(user.id!);
 
       context.go('/home');
 
@@ -133,6 +135,7 @@ class _LoginPageState extends State<LoginPage> {
       if(!mounted) return;
 
       SessionService.instance.setUser(user);
+      movieListsController.loadForUser(user.id!);
 
       context.go('/home');
 

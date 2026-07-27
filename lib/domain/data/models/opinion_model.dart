@@ -5,6 +5,7 @@ class OpinionModel extends Opinion {
   final String authorName;
   final String authorLastName;
   final String? authorPhotoPath;
+  final List<String> likedBy;
 
   const OpinionModel({
     super.id,
@@ -16,6 +17,7 @@ class OpinionModel extends Opinion {
     this.authorName = '',
     this.authorLastName = '',
     this.authorPhotoPath,
+    this.likedBy = const [],
   });
 
   Map<String, dynamic> toFirestoreMap() => {
@@ -40,6 +42,10 @@ class OpinionModel extends Opinion {
         authorName: map['author_nombre'] as String? ?? '',
         authorLastName: map['author_apellido'] as String? ?? '',
         authorPhotoPath: map['author_foto_perfil'] as String?,
+        likedBy: (map['liked_by'] as List?)
+                ?.map((e) => e as String)
+                .toList() ??
+            const [],
       );
 
   Opinion toEntity() => Opinion(

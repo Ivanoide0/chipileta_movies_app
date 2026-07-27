@@ -156,7 +156,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openNotifications() {
-    notificationsController.markAllRead();
+    // Refresca desde Firestore (likes nuevos) y marca como leídas.
+    notificationsController
+        .load()
+        .then((_) => notificationsController.markAllRead());
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
 import 'package:chipileta_movies_app/domain/datasources/notifications_local_datasource.dart';
+import 'package:chipileta_movies_app/domain/datasources/notifications_remote_datasource.dart';
+import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
 import 'package:chipileta_movies_app/domain/entities/app_notification.dart';
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
 import 'package:chipileta_movies_app/domain/repositories/notifications_repository_impl.dart';
@@ -29,14 +31,26 @@ class NotificationsController extends ChangeNotifier {
   late final DeleteNotificationUseCase _deleteNotification;
   late final ClearNotificationsUseCase _clearNotifications;
 
+  final NotificationsRemoteDataSource _remote = NotificationsRemoteDataSource();
+
+  String? get _uid => SessionService.instance.currentUser?.id;
+
   List<AppNotification> _items = const [];
   List<AppNotification> get items => List.unmodifiable(_items);
 
   int get unreadCount => _items.where((n) => !n.isRead).length;
   bool get hasUnread => unreadCount > 0;
 
+  /// Mezcla las notificaciones locales (favoritos/guardados) con las de
+  /// Firestore (likes del usuario actual), ordenadas por fecha.
   Future<void> load() async {
-    _items = await _getNotifications();
+    final local = await _getNotifications();
+    final uid = _uid;
+    final remote =
+        uid == null ? <AppNotification>[] : await _remote.getForUser(uid);
+
+    _items = [...local, ...remote]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     notifyListeners();
   }
 
@@ -53,18 +67,22 @@ class NotificationsController extends ChangeNotifier {
   Future<void> markAllRead() async {
     if (!hasUnread) return;
     await _markRead();
+    final uid = _uid;
+    if (uid != null) await _remote.markAllRead(uid);
     await load();
   }
 
-  // Quita de inmediato de la lista (UI fluida) y luego borra en la base.
+  // Quita de inmediato de la lista (UI fluida) y luego borra en el origen.
   Future<void> remove(AppNotification item) async {
-    final id = item.id;
-    if (id == null) return;
-
-    _items = _items.where((n) => n.id != id).toList();
+    _items = _items.where((n) => !identical(n, item)).toList();
     notifyListeners();
 
-    await _deleteNotification(id);
+    if (item.remoteId != null) {
+      final uid = _uid;
+      if (uid != null) await _remote.delete(uid, item.remoteId!);
+    } else if (item.id != null) {
+      await _deleteNotification(item.id!);
+    }
   }
 
   Future<void> clearAll() async {
@@ -74,6 +92,8 @@ class NotificationsController extends ChangeNotifier {
     notifyListeners();
 
     await _clearNotifications();
+    final uid = _uid;
+    if (uid != null) await _remote.clearAll(uid);
   }
 }
 

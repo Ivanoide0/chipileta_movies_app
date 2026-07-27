@@ -16,6 +16,7 @@ import 'package:chipileta_movies_app/presentation/screens/movies/widgets/home_fo
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/movie_action_feedback.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/domain/datasources/opinions_remote_datasource.dart';
+import 'package:chipileta_movies_app/domain/datasources/notifications_remote_datasource.dart';
 import 'package:chipileta_movies_app/presentation/utils/profile_image.dart';
 
 class MediaDetailScreen extends StatefulWidget {
@@ -271,6 +272,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(18, 32, 18, 0),
                       child: _LocalOpinionsSection(
+                        movie: movie,
                         opinionsFuture: _opinionsFuture,
                         commentController: _commentController,
                         rating: _rating,
@@ -2144,6 +2146,7 @@ class _ActorErrorView extends StatelessWidget {
 }
 
 class _LocalOpinionsSection extends StatelessWidget {
+  final Movie movie;
   final Future<List<OpinionWithAuthor>> opinionsFuture;
   final TextEditingController commentController;
   final int rating;
@@ -2152,6 +2155,7 @@ class _LocalOpinionsSection extends StatelessWidget {
   final VoidCallback onSubmit;
 
   const _LocalOpinionsSection({
+    required this.movie,
     required this.opinionsFuture,
     required this.commentController,
     required this.rating,
@@ -2212,7 +2216,7 @@ class _LocalOpinionsSection extends StatelessWidget {
             return Column(
               children: [
                 for (var index = 0; index < opinions.length; index++) ...[
-                  _LocalOpinionCard(item: opinions[index]),
+                  _LocalOpinionCard(item: opinions[index], movie: movie),
                   if (index < opinions.length - 1) const SizedBox(height: 12),
                 ],
               ],
@@ -2355,8 +2359,9 @@ class _OpinionComposer extends StatelessWidget {
 
 class _LocalOpinionCard extends StatelessWidget {
   final OpinionWithAuthor item;
+  final Movie movie;
 
-  const _LocalOpinionCard({required this.item});
+  const _LocalOpinionCard({required this.item, required this.movie});
 
   @override
   Widget build(BuildContext context) {
@@ -2434,10 +2439,143 @@ class _LocalOpinionCard extends StatelessWidget {
                     height: 1.45,
                   ),
                 ),
+                const SizedBox(height: 6),
+                _LikeButton(item: item, movie: movie),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Botón de like para una review. Guarda el like en Firestore y, si es un
+/// like nuevo a la review de otra persona, le crea una notificación al autor.
+class _LikeButton extends StatefulWidget {
+  final OpinionWithAuthor item;
+  final Movie movie;
+
+  const _LikeButton({required this.item, required this.movie});
+
+  @override
+  State<_LikeButton> createState() => _LikeButtonState();
+}
+
+class _LikeButtonState extends State<_LikeButton> {
+  final OpinionsRemoteDataSource _opinions = OpinionsRemoteDataSource();
+  final NotificationsRemoteDataSource _notifications =
+      NotificationsRemoteDataSource();
+
+  late bool _liked;
+  late int _count;
+  bool _busy = false;
+
+  String? get _myUid => SessionService.instance.currentUser?.id;
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = _myUid;
+    _liked = uid != null && widget.item.isLikedBy(uid);
+    _count = widget.item.likeCount;
+  }
+
+  Future<void> _toggle() async {
+    if (_busy) return;
+
+    final uid = _myUid;
+    if (uid == null) {
+      _snack('Inicia sesión para dar like.');
+      return;
+    }
+
+    final opinionId = widget.item.opinion.id;
+    if (opinionId == null) return;
+
+    final authorUid = widget.item.opinion.userId;
+    if (authorUid == uid) {
+      _snack('No puedes dar like a tu propia review.');
+      return;
+    }
+
+    final willLike = !_liked;
+
+    // Actualización optimista.
+    setState(() {
+      _busy = true;
+      _liked = willLike;
+      _count += willLike ? 1 : -1;
+    });
+
+    try {
+      await _opinions.setLike(
+        opinionId: opinionId,
+        uid: uid,
+        liked: willLike,
+      );
+
+      if (willLike) {
+        await _notifications.addLike(
+          recipientUid: authorUid,
+          movieId: widget.movie.id,
+          movieTitle: widget.movie.title,
+          moviePoster: widget.movie.posterPath,
+        );
+      }
+    } catch (_) {
+      // Revertir si falla.
+      if (mounted) {
+        setState(() {
+          _liked = !willLike;
+          _count += willLike ? -1 : 1;
+        });
+      }
+      _snack('No se pudo registrar el like.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _snack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: AppColors.footerBackground,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: _toggle,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              color: _liked ? AppColors.yellow : AppColors.white54,
+              size: 18,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '$_count',
+              style: TextStyle(
+                color: _liked ? AppColors.yellow : AppColors.white54,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

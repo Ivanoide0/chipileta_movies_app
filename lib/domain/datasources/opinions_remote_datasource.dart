@@ -79,7 +79,20 @@ class OpinionsRemoteDataSource {
         authorName: model.authorName,
         authorLastName: model.authorLastName,
         authorPhotoPath: model.authorPhotoPath,
+        likedBy: model.likedBy,
       );
     }).toList();
+  }
+
+  /// Da o quita like a una opinión. El campo `liked_by` guarda los uids.
+  Future<void> setLike({
+    required String opinionId,
+    required String uid,
+    required bool liked,
+  }) async {
+    await _opinions.doc(opinionId).update({
+      'liked_by':
+          liked ? FieldValue.arrayUnion([uid]) : FieldValue.arrayRemove([uid]),
+    });
   }
 }

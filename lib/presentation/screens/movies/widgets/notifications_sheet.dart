@@ -93,7 +93,7 @@ class NotificationsSheet extends StatelessWidget {
                         final item = items[index];
 
                         return Dismissible(
-                          key: ValueKey(item.id),
+                          key: ValueKey(item.remoteId ?? item.id),
                           direction: DismissDirection.startToEnd,
                           onDismissed: (_) =>
                               notificationsController.remove(item),
@@ -149,10 +149,19 @@ class _NotificationTile extends StatelessWidget {
 
   const _NotificationTile({required this.item});
 
+  IconData get _typeIcon {
+    switch (item.type) {
+      case NotificationType.favorite:
+        return Icons.star_rounded;
+      case NotificationType.saved:
+        return Icons.save;
+      case NotificationType.like:
+        return Icons.favorite_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isFavorite = item.type == NotificationType.favorite;
-
     // Efecto de entrada: aparece con fade y un ligero deslizamiento.
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: 1),
@@ -213,7 +222,7 @@ class _NotificationTile extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      isFavorite ? Icons.star_rounded : Icons.save,
+                      _typeIcon,
                       color: AppColors.yellow,
                       size: 15,
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
+import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/home_footer.dart';
 import 'package:chipileta_movies_app/presentation/widgets/button_widget.dart';
@@ -177,8 +178,8 @@ class ProfileScreen extends StatelessWidget {
                             final confirm = await showLogoutConfirmDialog(context);
                             if (!confirm) return;
 
-                            // Aquí puedes limpiar sesión si lo necesitas:
-                            // await SessionService.instance.logout();
+                            SessionService.instance.clear();
+                            movieListsController.clear();
 
                             if (context.mounted) {
                               context.go('/login');
