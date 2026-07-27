@@ -16,19 +16,19 @@ abstract class AuthRepository {
   });
 
   Future<User> updateUsername({
-    required int userId,
+    required String userId,
     required String newName,
     required String newLastName
   });
 
   Future<User> updatePassword({
-    required int userId,
+    required String userId,
     required String currentPassword,
     required String newPassword
   });
 
   Future<User> updatePhoto({
-    required int userId,
+    required String userId,
     required String? photoPath
   });
 

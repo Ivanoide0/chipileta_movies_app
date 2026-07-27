@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'dart:io';
 
-import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
 import 'package:chipileta_movies_app/domain/datasources/movies_remote_datasource.dart';
-import 'package:chipileta_movies_app/domain/datasources/opinions_local_datasource.dart';
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
 import 'package:chipileta_movies_app/domain/entities/actor_detail.dart';
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
@@ -17,6 +15,8 @@ import 'package:chipileta_movies_app/presentation/controllers/movie_lists_contro
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/home_footer.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/movie_action_feedback.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
+import 'package:chipileta_movies_app/domain/datasources/opinions_remote_datasource.dart';
+import 'package:chipileta_movies_app/presentation/utils/profile_image.dart';
 
 class MediaDetailScreen extends StatefulWidget {
   final Movie movie;
@@ -50,7 +50,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     _moviesDatasource = MoviesRemoteDatasource();
 
     final opinionsRepository = OpinionsRepositoryImpl(
-      OpinionsLocalDataSource(DatabaseHelper.instance),
+      OpinionsRemoteDataSource(),
     );
 
     _addOpinion = AddOpinionUseCase(opinionsRepository);
@@ -159,6 +159,9 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
         userId: user.id!,
         rating: _rating.toDouble(),
         comment: comment,
+        authorName: user.name,
+        authorLastName: user.lastName,
+        authorPhotoPath: user.photoPath,
       );
 
       _commentController.clear();
@@ -2373,13 +2376,11 @@ class _LocalOpinionCard extends StatelessWidget {
           Builder(
             builder: (context) {
               final photoPath = item.authorPhotoPath;
-              final hasPhoto =
-                  photoPath != null && File(photoPath).existsSync();
+              final hasPhoto = ProfileImage.hasPhoto(photoPath);
               return CircleAvatar(
                 radius: 20,
                 backgroundColor: AppColors.yellow,
-                backgroundImage:
-                    hasPhoto ? FileImage(File(photoPath)) : null,
+                backgroundImage: ProfileImage.provider(photoPath),
                 child: hasPhoto
                     ? null
                     : Text(

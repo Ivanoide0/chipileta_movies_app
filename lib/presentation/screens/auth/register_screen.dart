@@ -7,8 +7,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:chipileta_movies_app/presentation/utils/validators.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/resources/styles/styles.dart';
-import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
-import 'package:chipileta_movies_app/domain/datasources/auth_local_datasource.dart';
+import 'package:chipileta_movies_app/domain/datasources/firebase_auth_datasource.dart';
 import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/register_usecase.dart';
 import 'package:chipileta_movies_app/presentation/widgets/input_field_widget.dart';
@@ -58,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    final dataSource = AuthLocalDataSource(DatabaseHelper.instance);
+    final dataSource = FirebaseAuthDataSource();
     final repository = AuthRepositoryImpl(dataSource);
     _registerUseCase = RegisterUseCase(repository);
   }

@@ -6,7 +6,7 @@ class UpdatePasswordUsecase{
   UpdatePasswordUsecase(this.repository);
 
   Future<User> call({
-    required int userId,
+    required String userId,
     required String currentPassword,
     required String newPassword
   }){

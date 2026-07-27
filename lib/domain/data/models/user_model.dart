@@ -1,7 +1,6 @@
 import '../../entities/user.dart';
 
 class UserModel extends User {
-  final String? passwordHash;
   final String? googleId;
 
   const UserModel({
@@ -15,38 +14,34 @@ class UserModel extends User {
     required super.createdAt,
     required super.rolId,
     super.photoPath,
-    this.passwordHash,
-    this.googleId
+    this.googleId,
   });
 
-  Map<String, dynamic>toMap()=>{
-    'id': id,
+  Map<String, dynamic> toFirestoreMap() => {
     'nombre': name,
     'apellido': lastName,
     'email': email,
-    'password': passwordHash,
     'telefono': telephone,
-    'acepto_terminos': acceptTerms ? 1 : 0,
+    'acepto_terminos': acceptTerms,
     'rol_id': rolId,
-    'is_active': isActive ? 1 : 0,
+    'is_active': isActive,
     'created_at': createdAt.toIso8601String(),
     'google_id': googleId,
-    'foto_perfil': photoPath
+    'foto_perfil': photoPath,
   };
 
-  factory UserModel.fromMap(Map<String, dynamic> map) => UserModel(
-    id: map['id'] as int?,
+  factory UserModel.fromFirestore(String id, Map<String, dynamic> map) => UserModel(
+    id: id,
     name: map['nombre'] as String,
     lastName: map['apellido'] as String,
     email: map['email'] as String,
-    passwordHash: map['password'] as String?,
-    telephone: map['telefono'] as String,
-    acceptTerms: (map['acepto_terminos'] as int == 1),
-    rolId: map['rol_id'] as int,
-    isActive: (map['is_active'] as int == 1),
+    telephone: map['telefono'] as String? ?? '',
+    acceptTerms: (map['acepto_terminos'] as bool?) ?? false,
+    rolId: (map['rol_id'] as int?) ?? 2,
+    isActive: (map['is_active'] as bool?) ?? true,
     createdAt: DateTime.parse(map['created_at'] as String),
     googleId: map['google_id'] as String?,
-    photoPath: map['foto_perfil'] as String?
+    photoPath: map['foto_perfil'] as String?,
   );
 
   User toEntity() => User(
@@ -59,6 +54,6 @@ class UserModel extends User {
     rolId: rolId,
     isActive: isActive,
     createdAt: createdAt,
-    photoPath: photoPath
+    photoPath: photoPath,
   );
 }

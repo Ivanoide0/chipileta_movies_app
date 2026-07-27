@@ -1,25 +1,31 @@
 import '../entities/opinion.dart';
 import 'opinions_repository.dart';
-import '../datasources/opinions_local_datasource.dart';
+import '../datasources/opinions_remote_datasource.dart';
 import '../entities/opinion_with_author.dart';
 
 class OpinionsRepositoryImpl implements OpinionsRepository {
-  final OpinionsLocalDataSource localDataSource;
+  final OpinionsRemoteDataSource localDataSource;
 
   OpinionsRepositoryImpl(this.localDataSource);
 
   @override
   Future<Opinion> addOpinion({
     required int movieId,
-    required int userId,
+    required String userId,
     required double rating,
     required String comment,
+    required String authorName,
+    required String authorLastName,
+    String? authorPhotoPath,
   }) async {
     final model = await localDataSource.addOpinion(
       movieId: movieId,
       userId: userId,
       rating: rating,
       comment: comment,
+      authorName: authorName,
+      authorLastName: authorLastName,
+      authorPhotoPath: authorPhotoPath,
     );
     return model.toEntity();
   }
@@ -37,7 +43,7 @@ class OpinionsRepositoryImpl implements OpinionsRepository {
   }
 
   @override
-  Future<List<OpinionWithAuthor>> getAllOpinionsWithAuthor(){
+  Future<List<OpinionWithAuthor>> getAllOpinionsWithAuthor() {
     return localDataSource.getAllOpinionsWithAuthor();
   }
 }

@@ -7,7 +7,7 @@ class UpdateProfilePhotoUseCase {
   UpdateProfilePhotoUseCase(this.repository);
 
   Future<User> call({
-    required int userId,
+    required String userId,
     required String? photoPath,
   }) {
     return repository.updatePhoto(

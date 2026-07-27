@@ -5,6 +5,7 @@ import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/home_footer.dart';
 import 'package:chipileta_movies_app/presentation/widgets/button_widget.dart';
+import 'package:chipileta_movies_app/presentation/utils/profile_image.dart';
 
 class ProfileScreen extends StatelessWidget {
   static const name = 'profile-screen';
@@ -19,7 +20,7 @@ class ProfileScreen extends StatelessWidget {
     final email = user?.email ?? 'Papito@chulo.com';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'R';
     final photoPath = user?.photoPath;
-    final hasPhoto = photoPath != null && File(photoPath).existsSync();
+    final hasPhoto = ProfileImage.hasPhoto(photoPath);
 
     return Scaffold(
       backgroundColor: AppColors.homeGradientBottom,
@@ -120,8 +121,7 @@ class ProfileScreen extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 39,
                           backgroundColor: AppColors.yellow,
-                          backgroundImage:
-                              hasPhoto ? FileImage(File(photoPath)) : null,
+                          backgroundImage: ProfileImage.provider(photoPath),
                           child: hasPhoto
                               ? null
                               : Text(

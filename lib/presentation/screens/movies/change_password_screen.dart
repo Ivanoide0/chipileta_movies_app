@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:chipileta_movies_app/presentation/utils/validators.dart';
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
-import 'package:chipileta_movies_app/domain/datasources/auth_local_datasource.dart';
-import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
+import 'package:chipileta_movies_app/domain/datasources/firebase_auth_datasource.dart';
 import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/update_password_usecase.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/config_screen.dart';
@@ -32,7 +31,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   void initState() {
     super.initState();
-    final datasource = AuthLocalDataSource(DatabaseHelper.instance);
+    final datasource = FirebaseAuthDataSource();
     final repository = AuthRepositoryImpl(datasource);
     _updatePasswordUseCase = UpdatePasswordUsecase(repository);
   }

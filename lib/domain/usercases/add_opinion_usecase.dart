@@ -8,9 +8,12 @@ class AddOpinionUseCase {
 
   Future<Opinion> call({
     required int movieId,
-    required int userId,
+    required String userId,
     required double rating,
     required String comment,
+    required String authorName,
+    required String authorLastName,
+    String? authorPhotoPath,
   }) {
     final text = comment.trim();
 
@@ -27,6 +30,9 @@ class AddOpinionUseCase {
       userId: userId,
       rating: rating,
       comment: text,
+      authorName: authorName,
+      authorLastName: authorLastName,
+      authorPhotoPath: authorPhotoPath,
     );
   }
 }

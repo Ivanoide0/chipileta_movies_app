@@ -1,6 +1,6 @@
 import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
 import 'package:chipileta_movies_app/domain/datasources/movies_remote_datasource.dart';
-import 'package:chipileta_movies_app/domain/datasources/opinions_local_datasource.dart';
+import 'package:chipileta_movies_app/domain/datasources/opinions_remote_datasource.dart';
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
 import 'package:chipileta_movies_app/domain/entities/movie.dart';
 import 'package:chipileta_movies_app/domain/entities/opinion_view.dart';
@@ -645,9 +645,7 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
   void initState() {
     super.initState();
 
-    final datasource = OpinionsLocalDataSource(
-      DatabaseHelper.instance,
-    );
+    final datasource = OpinionsRemoteDataSource();
 
     final repository = OpinionsRepositoryImpl(
       datasource,
@@ -755,6 +753,9 @@ class _OpinionsSectionState extends State<_OpinionsSection> {
         userId: user.id!,
         rating: _rating.toDouble(),
         comment: _commentController.text,
+        authorName: user.name,
+        authorLastName: user.lastName,
+        authorPhotoPath: user.photoPath,
       );
 
       _commentController.clear();

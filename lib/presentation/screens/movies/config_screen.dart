@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'dart:convert';
+import 'package:chipileta_movies_app/presentation/utils/profile_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,8 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:chipileta_movies_app/domain/datasources/session_service.dart';
-import 'package:chipileta_movies_app/domain/datasources/auth_local_datasource.dart';
-import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
+import 'package:chipileta_movies_app/domain/datasources/firebase_auth_datasource.dart';
 import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/update_profile_photo_usecase.dart';
 import 'package:chipileta_movies_app/domain/usercases/update_username_usecase.dart';
@@ -40,7 +40,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
   @override
   void initState() {
     super.initState();
-    final datasource = AuthLocalDataSource(DatabaseHelper.instance);
+    final datasource = FirebaseAuthDataSource();
     final repository = AuthRepositoryImpl(datasource);
     _updatePhotoUseCase = UpdateProfilePhotoUseCase(repository);
     _updateUsernameUseCase = UpdateUsernameUseCase(repository);
@@ -67,12 +67,9 @@ class _ConfigScreenState extends State<ConfigScreen> {
       );
       if (picked == null) return;
 
-      final dir = await getApplicationDocumentsDirectory();
-      final fileName =
-          'profile_${DateTime.now().millisecondsSinceEpoch}${p.extension(picked.path)}';
-      final savedImage = await File(picked.path).copy(p.join(dir.path, fileName));
-
-      await _savePhoto(savedImage.path);
+      final bytes = await File(picked.path).readAsBytes();
+      final base64Photo = base64Encode(bytes);
+      await _savePhoto(base64Photo);
     } catch (e) {
       _showMessage('No se pudo cargar la imagen.');
     }
@@ -115,7 +112,6 @@ class _ConfigScreenState extends State<ConfigScreen> {
     final newName = _nameController.text.trim();
     final newLastName = _lastNameController.text.trim();
 
-    _showMessage('DEBUG nombre="$newName" apellido="$newLastName"');
     if (newName.isEmpty) {
       _showMessage('El nombre no puede estar vacío.');
       return;
@@ -277,7 +273,7 @@ class _PhotoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasPhoto = photoPath != null && File(photoPath!).existsSync();
+    final hasPhoto = ProfileImage.hasPhoto(photoPath);
 
     return Stack(
       alignment: Alignment.bottomRight,
@@ -288,7 +284,7 @@ class _PhotoSection extends StatelessWidget {
           child: CircleAvatar(
             radius: 55,
             backgroundColor: AppColors.yellow,
-            backgroundImage: hasPhoto ? FileImage(File(photoPath!)) : null,
+            backgroundImage: ProfileImage.provider(photoPath),
             child: hasPhoto
                 ? null
                 : const Icon(

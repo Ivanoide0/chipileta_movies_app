@@ -6,8 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:chipileta_movies_app/presentation/utils/validators.dart';
 import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/resources/styles/styles.dart';
-import 'package:chipileta_movies_app/domain/datasources/database_helper.dart';
-import 'package:chipileta_movies_app/domain/datasources/auth_local_datasource.dart';
+import 'package:chipileta_movies_app/domain/datasources/firebase_auth_datasource.dart';
 import 'package:chipileta_movies_app/domain/datasources/device_auth_service.dart';
 import 'package:chipileta_movies_app/domain/repositories/auth_repository_impl.dart';
 import 'package:chipileta_movies_app/domain/usercases/login_usecase.dart';
@@ -41,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    final dataSource = AuthLocalDataSource(DatabaseHelper.instance);
+    final dataSource = FirebaseAuthDataSource();
     final repository = AuthRepositoryImpl(dataSource);
     _loginUseCase = LoginUseCase(repository);
     _googleUseCase = SignInWithGoogleUseCase(repository);

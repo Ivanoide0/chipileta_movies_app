@@ -1,10 +1,10 @@
 import '../entities/user.dart';
 import 'auth_repository.dart';
-import '../datasources/auth_local_datasource.dart';
+import '../datasources/firebase_auth_datasource.dart';
 import '../datasources/google_auth_service.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthLocalDataSource localDataSource;
+  final FirebaseAuthDataSource localDataSource;
   final GoogleAuthService googleAuthService;
 
   AuthRepositoryImpl(
@@ -54,7 +54,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> updateUsername({
-    required int userId,
+    required String userId,
     required String newName,
     required String newLastName,
   }) async {
@@ -68,7 +68,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> updatePassword({
-    required int userId,
+    required String userId,
     required String currentPassword,
     required String newPassword,
   }) async {
@@ -82,7 +82,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> updatePhoto({
-    required int userId,
+    required String userId,
     required String? photoPath,
   }) async {
     final userModel = await localDataSource.updatePhoto(

@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "876216140250",
+    "project_id": "chipileta-movie-app",
+    "storage_bucket": "chipileta-movie-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:876216140250:android:2d5a2484931de4845680e3",
+        "android_client_info": {
+          "package_name": "com.example.chipileta_movies_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "876216140250-c98b7op4g7itgt4fo6e055vn1e786j7g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBz-fxd8b80kvBkN39Uo_Sm4UWC3Vj0TEA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "876216140250-c98b7op4g7itgt4fo6e055vn1e786j7g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "876216140250-lp422el49lk8r305ja069k08jslbtetk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chipiletaMoviesApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

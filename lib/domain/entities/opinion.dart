@@ -1,7 +1,7 @@
 class Opinion {
-  final int? id;
+  final String? id;
   final int movieId;
-  final int userId;
+  final String userId;
   final double rating;
   final String comment;
   final DateTime createdAt;
@@ -12,6 +12,6 @@ class Opinion {
     required this.userId,
     required this.rating,
     required this.comment,
-    required this.createdAt
+    required this.createdAt,
   });
 }

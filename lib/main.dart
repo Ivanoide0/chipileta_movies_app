@@ -5,9 +5,15 @@ import 'package:chipileta_movies_app/services/notification_service.dart';
 import 'package:chipileta_movies_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform
+  );
 
   await dotenv.load(fileName: '.env');
   await GoogleAuthService().initialize();
