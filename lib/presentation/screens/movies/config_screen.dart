@@ -127,7 +127,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
       SessionService.instance.setUser(updated);
       _showMessage('Nombre actualizado.');
       await NotificationService.instance.show(
-        title: 'Chipileta Movies',
+        title: 'Chipi+',
         body: 'Datos guardados correctamente.',
       );
     } catch (e) {

@@ -5,6 +5,7 @@ import 'package:chipileta_movies_app/resources/colors/colors.dart';
 import 'package:chipileta_movies_app/presentation/controllers/movie_lists_controller.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/home_footer.dart';
 import 'package:chipileta_movies_app/presentation/screens/movies/widgets/media_detail_screen.dart';
+import 'package:chipileta_movies_app/presentation/screens/movies/widgets/favorites_pdf.dart';
 
 class FavoritesScreen extends StatelessWidget {
   static const name = 'favorites-screen';
@@ -38,13 +39,20 @@ class FavoritesScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Favoritos',
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Favoritos',
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        _ExportPdfButton(movies: movies),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     const Text(
@@ -130,6 +138,128 @@ class _EmptyFavorites extends StatelessWidget {
             ),
             SizedBox(height: 82),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExportPdfButton extends StatefulWidget {
+  final List<Movie> movies;
+
+  const _ExportPdfButton({required this.movies});
+
+  @override
+  State<_ExportPdfButton> createState() => _ExportPdfButtonState();
+}
+
+class _ExportPdfButtonState extends State<_ExportPdfButton> {
+  bool _loading = false;
+
+  Future<void> _run(Future<void> Function(List<Movie>) action) async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      await action(widget.movies);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo generar el PDF.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _chooseAction() async {
+    if (_loading) return;
+    final action = await showModalBottomSheet<Future<void> Function(List<Movie>)>(
+      context: context,
+      backgroundColor: AppColors.homeGradientBottom,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              const Text(
+                'Tus películas favoritas en PDF',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              ListTile(
+                leading: const Icon(Icons.download_rounded, color: AppColors.yellow),
+                title: const Text('Descargar',
+                    style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w700)),
+                subtitle: const Text('Guardar el PDF en tu dispositivo',
+                    style: TextStyle(color: AppColors.white70, fontSize: 12)),
+                onTap: () => Navigator.pop(sheetContext, downloadFavoritesPdf),
+              ),
+              ListTile(
+                leading: const Icon(Icons.ios_share_rounded, color: AppColors.turquoise),
+                title: const Text('Compartir',
+                    style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w700)),
+                subtitle: const Text('Enviar a otra app',
+                    style: TextStyle(color: AppColors.white70, fontSize: 12)),
+                onTap: () => Navigator.pop(sheetContext, shareFavoritesPdf),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (action != null) await _run(action);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.yellow,
+      borderRadius: BorderRadius.circular(24),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: _loading ? null : _chooseAction,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_loading)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.heroText,
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.picture_as_pdf_rounded,
+                  color: AppColors.heroText,
+                  size: 18,
+                ),
+              const SizedBox(width: 7),
+              const Text(
+                'PDF',
+                style: TextStyle(
+                  color: AppColors.heroText,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

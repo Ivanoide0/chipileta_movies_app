@@ -81,7 +81,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _newPasswordController.clear();
       _showMessage('Contraseña actualizada.');
       await NotificationService.instance.show(
-        title: 'Chipileta Movies',
+        title: 'Chipi+',
         body: 'Contraseña actualizada correctamente.',
       );
     } catch (e) {
