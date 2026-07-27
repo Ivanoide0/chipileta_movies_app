@@ -949,23 +949,11 @@ class _CastSection extends StatefulWidget {
 }
 
 class _CastSectionState extends State<_CastSection> {
-  final ScrollController _scrollController = ScrollController();
+  bool _showAll = false;
 
-  bool _showLeftFade = false;
-  bool _showRightFade = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _scrollController.addListener(_updateFadeVisibility);
-
-    /*
-     * Esperamos a que el carrusel se dibuje para comprobar
-     * si existe contenido adicional hacia la derecha.
-     */
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateFadeVisibility();
+  void _toggleCast() {
+    setState(() {
+      _showAll = !_showAll;
     });
   }
 
@@ -974,136 +962,190 @@ class _CastSectionState extends State<_CastSection> {
     super.didUpdateWidget(oldWidget);
 
     /*
-     * Si cambia la cantidad de actores, volvemos a calcular
-     * los degradados laterales.
+     * Si la nueva película tiene tres actores o menos,
+     * se regresa automáticamente al estado reducido.
      */
-    if (oldWidget.cast.length != widget.cast.length) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _updateFadeVisibility();
-      });
+    if (widget.cast.length <= 3) {
+      _showAll = false;
     }
-  }
-
-  @override
-  void dispose() {
-    _scrollController
-      ..removeListener(_updateFadeVisibility)
-      ..dispose();
-
-    super.dispose();
-  }
-
-  void _updateFadeVisibility() {
-    if (!_scrollController.hasClients || !mounted) {
-      return;
-    }
-
-    final position = _scrollController.position;
-
-    /*
-     * El degradado izquierdo aparece después de comenzar
-     * a desplazar el carrusel.
-     */
-    final shouldShowLeft = position.pixels > 4;
-
-    /*
-     * El degradado derecho aparece mientras todavía exista
-     * contenido por visualizar.
-     */
-    final shouldShowRight =
-        position.maxScrollExtent > 0 &&
-        position.pixels < position.maxScrollExtent - 4;
-
-    if (_showLeftFade == shouldShowLeft &&
-        _showRightFade == shouldShowRight) {
-      return;
-    }
-
-    setState(() {
-      _showLeftFade = shouldShowLeft;
-      _showRightFade = shouldShowRight;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(right: 18),
-          child: _SectionHeading(
-            title: 'Reparto',
-            icon: Icons.groups_2_outlined,
-          ),
-        ),
-        const SizedBox(height: 14),
+    final hasMoreActors = widget.cast.length > 3;
 
-        if (widget.cast.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(right: 18),
-            child: _EmptySection(
+    if (widget.cast.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.only(right: 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _SectionHeading(
+              title: 'Reparto',
+              icon: Icons.groups_2_outlined,
+            ),
+            SizedBox(height: 14),
+            _EmptySection(
               icon: Icons.person_off_outlined,
               text: 'No hay información de reparto disponible.',
             ),
-          )
-        else
-          SizedBox(
-            height: 188,
-            child: ShaderMask(
-              shaderCallback: (bounds) {
-                return LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  stops: const [
-                    0,
-                    0.08,
-                    0.92,
-                    1,
-                  ],
-                  colors: [
-                    /*
-                     * Al comenzar, el lado izquierdo no se desvanece.
-                     * Después de desplazarse, sí aparece el degradado.
-                     */
-                    _showLeftFade
-                        ? Colors.transparent
-                        : Colors.white,
+          ],
+        ),
+      );
+    }
 
-                    Colors.white,
-                    Colors.white,
+    final collapsedCast = widget.cast
+        .take(3)
+        .toList(growable: false);
 
-                    /*
-                     * Mientras existan actores a la derecha,
-                     * se mantiene visible el desvanecido.
-                     */
-                    _showRightFade
-                        ? Colors.transparent
-                        : Colors.white,
-                  ],
-                ).createShader(bounds);
-              },
-              blendMode: BlendMode.dstIn,
-              child: ListView.separated(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(
-                  right: 18,
+    return Padding(
+      padding: const EdgeInsets.only(right: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /*
+           * Encabezado con el botón Ver más o Ver menos.
+           */
+          Row(
+            children: [
+              const Expanded(
+                child: _SectionHeading(
+                  title: 'Reparto',
+                  icon: Icons.groups_2_outlined,
                 ),
-                itemCount: widget.cast.length,
-                separatorBuilder: (_, __) {
-                  return const SizedBox(width: 12);
-                },
-                itemBuilder: (context, index) {
-                  return _CastCard(
-                    member: widget.cast[index],
-                  );
-                },
               ),
+
+              if (hasMoreActors)
+                SizedBox(
+                  width: 108,
+                  height: 38,
+                  child: TextButton(
+                    onPressed: _toggleCast,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.yellow,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
+                      minimumSize: const Size(108, 38),
+                      tapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          _showAll ? 'Ver menos' : 'Ver más',
+                          style: const TextStyle(
+                            color: AppColors.yellow,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        AnimatedRotation(
+                          turns: _showAll ? 0.5 : 0,
+                          duration: const Duration(
+                            milliseconds: 220,
+                          ),
+                          curve: Curves.easeOutCubic,
+                          child: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: AppColors.yellow,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          /*
+           * No se utiliza AnimatedSize.
+           * Las tarjetas conservan exactamente el mismo tamaño.
+           */
+          if (_showAll)
+            _ExpandedCastGrid(
+              cast: widget.cast,
+            )
+          else
+            _CollapsedCastRow(
+              cast: collapsedCast,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollapsedCastRow extends StatelessWidget {
+  final List<CastMember> cast;
+
+  const _CollapsedCastRow({
+    required this.cast,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var index = 0; index < cast.length; index++) ...[
+          Expanded(
+            child: _CastCard(
+              member: cast[index],
             ),
           ),
+          if (index < cast.length - 1)
+            const SizedBox(width: 10),
+        ],
       ],
+    );
+  }
+}
+
+class _ExpandedCastGrid extends StatelessWidget {
+  final List<CastMember> cast;
+
+  const _ExpandedCastGrid({
+    required this.cast,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      /*
+       * La pantalla de detalle ya tiene desplazamiento vertical.
+       * Por eso esta cuadrícula no debe desplazarse por separado.
+       */
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: cast.length,
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 18,
+
+        /*
+         * Se mantiene siempre la misma altura para cada tarjeta,
+         * tanto en la fila reducida como en la cuadrícula.
+         */
+        mainAxisExtent: 188,
+      ),
+      itemBuilder: (context, index) {
+        return _CastCard(
+          member: cast[index],
+        );
+      },
     );
   }
 }
@@ -1117,98 +1159,111 @@ class _CastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 112,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.of(context).push(
-              _buildActorDetailRoute(member),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Column(
-              children: [
-                Hero(
-                  tag: 'actor-${member.id}',
-                  child: Container(
-                    width: 104,
-                    height: 132,
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      color: AppColors.imagePlaceholder,
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(
-                        color: AppColors.dividerBlue.withValues(
-                          alpha: .48,
-                        ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.of(context).push(
+            _buildActorDetailRoute(member),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Column(
+            children: [
+              /*
+               * La fotografía utiliza el ancho disponible de la
+               * columna, pero conserva una altura fija.
+               *
+               * Como la fila reducida y la cuadrícula tienen
+               * exactamente tres columnas y los mismos espacios,
+               * el tamaño no cambia al presionar Ver más.
+               */
+              Hero(
+                tag: 'actor-${member.id}',
+                child: Container(
+                  width: double.infinity,
+                  height: 132,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: AppColors.imagePlaceholder,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: AppColors.dividerBlue.withValues(
+                        alpha: .48,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: .22),
-                          blurRadius: 14,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
                     ),
-                    child: member.profilePath.isEmpty
-                        ? const Icon(
-                            Icons.person_outline_rounded,
-                            color: AppColors.white54,
-                            size: 42,
-                          )
-                        : Image.network(
-                            'https://image.tmdb.org/t/p/w185'
-                            '${member.profilePath}',
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) {
-                              return const Icon(
-                                Icons.person_outline_rounded,
-                                color: AppColors.white54,
-                                size: 42,
-                              );
-                            },
-                          ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: .22,
+                        ),
+                        blurRadius: 14,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
+                  child: member.profilePath.isEmpty
+                      ? const Icon(
+                          Icons.person_outline_rounded,
+                          color: AppColors.white54,
+                          size: 42,
+                        )
+                      : Image.network(
+                          'https://image.tmdb.org/t/p/w185'
+                          '${member.profilePath}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) {
+                            return const Icon(
+                              Icons.person_outline_rounded,
+                              color: AppColors.white54,
+                              size: 42,
+                            );
+                          },
+                        ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  member.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                member.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  member.character.isEmpty
-                      ? 'Reparto'
-                      : member.character,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.white54,
-                    fontSize: 10,
-                    height: 1.15,
-                    fontWeight: FontWeight.w500,
-                  ),
+              ),
+
+              const SizedBox(height: 3),
+
+              Text(
+                member.character.isEmpty
+                    ? 'Reparto'
+                    : member.character,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.white54,
+                  fontSize: 10,
+                  height: 1.15,
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
+
+
 
 Route<void> _buildActorDetailRoute(CastMember member) {
   return PageRouteBuilder<void>(
