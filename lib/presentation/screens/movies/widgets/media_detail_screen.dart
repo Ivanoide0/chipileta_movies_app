@@ -3160,16 +3160,16 @@ class _ExtrasSection extends StatelessWidget {
         ],
         if (movie.backdrops.isNotEmpty) ...[
           const SizedBox(height: 18),
-          const _ExtrasSubtitle(text: 'Imágenes'),
+          const _ExtrasSubtitle(text: 'Escenas'),
           const SizedBox(height: 10),
          _CarouselEndFade(
   child: SizedBox(
-    height: 120,
+    height: 200, 
     child: ListView.separated(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.only(right: 55),
       itemCount: movie.backdrops.length,
-      separatorBuilder: (_, __) => const SizedBox(width: 12),
+      separatorBuilder: (_, __) => const SizedBox(width: 40),
       itemBuilder: (context, index) => _BackdropThumb(
         path: movie.backdrops[index],
         onTap: () => _openImage(
@@ -3418,11 +3418,11 @@ class _BackdropThumb extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Image.network(
           'https://image.tmdb.org/t/p/w500$path',
-          width: 200,
+          width: 300,
           height: 120,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Container(
-            width: 200,
+            width: 300,
             height: 120,
             color: AppColors.imagePlaceholder,
             child: const Icon(
