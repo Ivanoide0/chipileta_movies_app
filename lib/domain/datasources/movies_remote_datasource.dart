@@ -147,9 +147,18 @@ class MoviesRemoteDatasource implements MoviesDatasource {
       language: 'es-MX',
     );
 
+    
+
     String trailerKey = _selectTrailerKey(
       spanishData['videos'],
     );
+
+    List<MovieVideo> extraVideos = _parseExtraVideos(
+      spanishData['videos'],
+      excludeKey: trailerKey,
+    );
+
+    final List<String> backdrops = _parseBackdrops(spanishData['images']);
 
     List<Review> reviews = _parseReviews(
       spanishData['reviews'],
@@ -159,7 +168,7 @@ class MoviesRemoteDatasource implements MoviesDatasource {
      * TMDB puede no tener tráiler o reseñas traducidos al español.
      * Solo en ese caso hacemos una segunda consulta en inglés.
      */
-    if (trailerKey.isEmpty || reviews.isEmpty) {
+    if (trailerKey.isEmpty || reviews.isEmpty || extraVideos.isEmpty) {
       try {
         final englishData = await _getDetailPayload(
           mediaType: mediaType,
@@ -176,6 +185,13 @@ class MoviesRemoteDatasource implements MoviesDatasource {
         if (reviews.isEmpty) {
           reviews = _parseReviews(
             englishData['reviews'],
+          );
+        }
+
+        if (extraVideos.isEmpty) {
+          extraVideos = _parseExtraVideos(
+            englishData['videos'],
+            excludeKey: trailerKey,
           );
         }
       } catch (_) {
@@ -243,6 +259,8 @@ class MoviesRemoteDatasource implements MoviesDatasource {
       trailerKey: trailerKey,
       cast: cast,
       tmdbReviews: reviews,
+      videos: extraVideos,
+      backdrops: backdrops,
     );
   }
 
@@ -278,8 +296,8 @@ class MoviesRemoteDatasource implements MoviesDatasource {
     required String language,
   }) async {
     final appendToResponse = mediaType == 'tv'
-        ? 'videos,aggregate_credits,reviews'
-        : 'videos,credits,reviews';
+        ? 'videos,aggregate_credits,reviews,images'
+        : 'videos,credits,reviews,images';
 
     final url = Uri.parse(
       '$_baseUrl/$mediaType/$id',
@@ -287,6 +305,7 @@ class MoviesRemoteDatasource implements MoviesDatasource {
       queryParameters: {
         'language': language,
         'append_to_response': appendToResponse,
+        'include_image_language': 'es,en,null',
       },
     );
 
@@ -491,6 +510,47 @@ class MoviesRemoteDatasource implements MoviesDatasource {
     selected ??= youtubeVideos.first;
 
     return selected['key'] as String? ?? '';
+  }
+
+  List<MovieVideo> _parseExtraVideos(
+    dynamic value, {
+    required String excludeKey,
+  }) {
+    if (value is! Map<String, dynamic>) return const [];
+
+    final results = value['results'] as List<dynamic>? ?? const [];
+
+    return results
+        .whereType<Map<String, dynamic>>()
+        .where((v) =>
+            v['site'] == 'YouTube' &&
+            v['key'] is String &&
+            (v['key'] as String).isNotEmpty &&
+            v['key'] != excludeKey &&
+            (v['type'] == 'Teaser' ||
+                v['type'] == 'Clip' ||
+                v['type'] == 'Trailer'))
+        .map((v) => MovieVideo(
+              key: v['key'] as String,
+              name: v['name'] as String? ?? '',
+              type: v['type'] as String? ?? '',
+            ))
+        .take(10)
+        .toList(growable: false);
+  }
+
+  List<String> _parseBackdrops(dynamic value) {
+    if (value is! Map<String, dynamic>) return const [];
+
+    final backdrops = value['backdrops'] as List<dynamic>? ?? const [];
+
+    return backdrops
+        .whereType<Map<String, dynamic>>()
+        .map((img) => img['file_path'] as String?)
+        .whereType<String>()
+        .where((path) => path.isNotEmpty)
+        .take(12)
+        .toList(growable: false);
   }
 
   List<String> _parseGenreNames(dynamic value) {

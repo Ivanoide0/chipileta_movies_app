@@ -14,6 +14,21 @@ class CastMember {
   });
 }
 
+class MovieVideo {
+  final String key;
+  final String name;
+  final String type;
+
+  const MovieVideo({
+    required this.key,
+    required this.name,
+    required this.type,
+  });
+
+  String get thumbnailUrl =>
+      'https://img.youtube.com/vi/$key/hqdefault.jpg';
+}
+
 class Movie {
   final int id;
 
@@ -32,6 +47,8 @@ class Movie {
   final String trailerKey;
   final List<CastMember> cast;
   final List<Review> tmdbReviews;
+  final List<MovieVideo> videos;
+  final List<String> backdrops;
 
   const Movie({
     required this.id,
@@ -48,6 +65,8 @@ class Movie {
     this.trailerKey = '',
     this.cast = const [],
     this.tmdbReviews = const [],
+    this.videos = const [],
+    this.backdrops = const []
   }) : assert(
           mediaType == 'movie' || mediaType == 'tv',
           'mediaType debe ser "movie" o "tv"',
@@ -60,6 +79,8 @@ class Movie {
   int get opinionId => isTv ? -id : id;
 
   bool get hasTrailer => trailerKey.isNotEmpty;
+
+  bool get hasExtras => videos.isNotEmpty || backdrops.isNotEmpty;
 
   bool get hasCast => cast.isNotEmpty;
 
@@ -80,6 +101,8 @@ class Movie {
     String? trailerKey,
     List<CastMember>? cast,
     List<Review>? tmdbReviews,
+    List<MovieVideo>? videos,
+    List<String>? backdrops,
   }) {
     return Movie(
       id: id ?? this.id,
@@ -96,6 +119,8 @@ class Movie {
       trailerKey: trailerKey ?? this.trailerKey,
       cast: cast ?? this.cast,
       tmdbReviews: tmdbReviews ?? this.tmdbReviews,
+      videos: videos ?? this.videos,
+      backdrops: backdrops ?? this.backdrops,
     );
   }
 }

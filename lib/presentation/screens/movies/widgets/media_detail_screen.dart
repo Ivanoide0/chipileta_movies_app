@@ -270,6 +270,12 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 30, 0, 0),
+                      child: _ExtrasSection(movie: movie),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
                       padding: const EdgeInsets.fromLTRB(18, 32, 18, 0),
                       child: _LocalOpinionsSection(
                         movie: movie,
@@ -3108,4 +3114,315 @@ String _formatDate(DateTime date) {
   ];
 
   return '${date.day} ${months[date.month - 1]} ${date.year}';
+}
+
+class _ExtrasSection extends StatelessWidget {
+  final Movie movie;
+
+  const _ExtrasSection({required this.movie});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!movie.hasExtras) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(right: 18),
+          child: _SectionHeading(
+            title: 'Contenido extra',
+            icon: Icons.movie_filter_rounded,
+          ),
+        ),
+        if (movie.videos.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          const _ExtrasSubtitle(text: 'Teasers y clips'),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 150,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(right: 18),
+              itemCount: movie.videos.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) => _VideoCard(
+                video: movie.videos[index],
+                onTap: () => _openVideo(context, movie.videos[index]),
+              ),
+            ),
+          ),
+        ],
+        if (movie.backdrops.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          const _ExtrasSubtitle(text: 'Imágenes'),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 120,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(right: 18),
+              itemCount: movie.backdrops.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) => _BackdropThumb(
+                path: movie.backdrops[index],
+                onTap: () => _openImage(context, movie.backdrops[index]),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  void _openVideo(BuildContext context, MovieVideo video) {
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Cerrar video',
+      barrierColor: Colors.black.withValues(alpha: .72),
+      transitionDuration: const Duration(milliseconds: 260),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return _TrailerCenterDialog(
+          title: video.name.isNotEmpty ? video.name : movie.title,
+          videoId: video.key,
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.92, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  void _openImage(BuildContext context, String path) {
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Cerrar imagen',
+      barrierColor: Colors.black.withValues(alpha: .85),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          _ImageViewerDialog(path: path),
+      transitionBuilder: (context, animation, secondaryAnimation, child) =>
+          FadeTransition(opacity: animation, child: child),
+    );
+  }
+}
+
+class _ExtrasSubtitle extends StatelessWidget {
+  final String text;
+  const _ExtrasSubtitle({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: AppColors.white70,
+        fontSize: 13,
+        fontWeight: FontWeight.w800,
+        letterSpacing: .2,
+      ),
+    );
+  }
+}
+
+class _VideoCard extends StatelessWidget {
+  final MovieVideo video;
+  final VoidCallback onTap;
+
+  const _VideoCard({required this.video, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(
+          width: 230,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(
+                video.thumbnailUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: AppColors.imagePlaceholder,
+                  child: const Icon(
+                    Icons.movie_rounded,
+                    color: AppColors.white54,
+                    size: 34,
+                  ),
+                ),
+              ),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black87],
+                    stops: [0.45, 1],
+                  ),
+                ),
+              ),
+              Center(
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: .45),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.yellow.withValues(alpha: .9),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow_rounded,
+                    color: AppColors.yellow,
+                    size: 30,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 8,
+                top: 8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.yellow,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _typeLabel(video.type),
+                    style: const TextStyle(
+                      color: AppColors.heroText,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 10,
+                right: 10,
+                bottom: 8,
+                child: Text(
+                  video.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 12,
+                    height: 1.15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _typeLabel(String type) {
+    switch (type) {
+      case 'Teaser':
+        return 'TEASER';
+      case 'Clip':
+        return 'CLIP';
+      case 'Trailer':
+        return 'TRÁILER';
+      default:
+        return type.toUpperCase();
+    }
+  }
+}
+
+class _BackdropThumb extends StatelessWidget {
+  final String path;
+  final VoidCallback onTap;
+
+  const _BackdropThumb({required this.path, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          'https://image.tmdb.org/t/p/w500$path',
+          width: 200,
+          height: 120,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: 200,
+            height: 120,
+            color: AppColors.imagePlaceholder,
+            child: const Icon(
+              Icons.broken_image_rounded,
+              color: AppColors.white54,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ImageViewerDialog extends StatelessWidget {
+  final String path;
+  const _ImageViewerDialog({required this.path});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 4,
+              child: Image.network(
+                'https://image.tmdb.org/t/p/original$path',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 12,
+            child: Material(
+              color: Colors.black.withValues(alpha: .45),
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => Navigator.of(context).pop(),
+                child: const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(Icons.close_rounded,
+                      color: AppColors.white, size: 24),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
