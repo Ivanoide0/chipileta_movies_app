@@ -3139,37 +3139,47 @@ class _ExtrasSection extends StatelessWidget {
           const SizedBox(height: 14),
           const _ExtrasSubtitle(text: 'Teasers y clips'),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 150,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(right: 18),
-              itemCount: movie.videos.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) => _VideoCard(
-                video: movie.videos[index],
-                onTap: () => _openVideo(context, movie.videos[index]),
-              ),
-            ),
-          ),
+         _CarouselEndFade(
+  child: SizedBox(
+    height: 150,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.only(right: 55),
+      itemCount: movie.videos.length,
+      separatorBuilder: (_, __) => const SizedBox(width: 12),
+      itemBuilder: (context, index) => _VideoCard(
+        video: movie.videos[index],
+        onTap: () => _openVideo(
+          context,
+          movie.videos[index],
+        ),
+      ),
+    ),
+  ),
+),
         ],
         if (movie.backdrops.isNotEmpty) ...[
           const SizedBox(height: 18),
           const _ExtrasSubtitle(text: 'Imágenes'),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 120,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(right: 18),
-              itemCount: movie.backdrops.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) => _BackdropThumb(
-                path: movie.backdrops[index],
-                onTap: () => _openImage(context, movie.backdrops[index]),
-              ),
-            ),
-          ),
+         _CarouselEndFade(
+  child: SizedBox(
+    height: 120,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.only(right: 55),
+      itemCount: movie.backdrops.length,
+      separatorBuilder: (_, __) => const SizedBox(width: 12),
+      itemBuilder: (context, index) => _BackdropThumb(
+        path: movie.backdrops[index],
+        onTap: () => _openImage(
+          context,
+          movie.backdrops[index],
+        ),
+      ),
+    ),
+  ),
+),
         ],
       ],
     );
@@ -3216,6 +3226,47 @@ class _ExtrasSection extends StatelessWidget {
           _ImageViewerDialog(path: path),
       transitionBuilder: (context, animation, secondaryAnimation, child) =>
           FadeTransition(opacity: animation, child: child),
+    );
+  }
+}
+
+class _CarouselEndFade extends StatelessWidget {
+  final Widget child;
+  final double fadeWidth;
+
+  const _CarouselEndFade({
+    required this.child,
+    this.fadeWidth = 55,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+
+        Positioned(
+          top: 0,
+          bottom: 0,
+          right: 0,
+          child: IgnorePointer(
+            child: Container(
+              width: fadeWidth,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.transparent,
+                    AppColors.homeGradientBottom,
+                  ],
+                  stops: [0.0, 1.0],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
